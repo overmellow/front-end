@@ -3,12 +3,16 @@
 import { withAuth } from '../components/withAuth'
 import { signOut } from 'next-auth/react'
 import { useSession } from 'next-auth/react'
+import Link from 'next/link'
 
 function Dashboard() {
   const { data: session } = useSession()
 
   return (
     <div className="container mt-5">
+      <ul>
+        <li><Link href="/contracts">Contracts</Link></li>
+      </ul>
       <h1>Dashboard</h1>
       <p>Welcome to your dashboard, {session?.user?.email}. This is a protected page.</p>
       <button 
