@@ -5,7 +5,7 @@ import { signOut } from 'next-auth/react'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 
-function Dashboard() {
+function DashboardPage() {
   const { data: session } = useSession()
 
   return (
@@ -25,4 +25,4 @@ function Dashboard() {
   )
 }
 
-export default withAuth(Dashboard)
+export default withAuth(DashboardPage)

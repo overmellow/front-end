@@ -17,10 +17,12 @@ export default function AddContractPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ title, status }),
+        body: JSON.stringify({ title, content }),
       })
 
       if (response.ok) {
+        const data = await response.json()
+
         router.push('/contracts')
         router.refresh()
       } else {
@@ -32,11 +34,11 @@ export default function AddContractPage() {
   }
 
   return (
-    <div>
+    <div className='container mt-5'>
       <h1>Add New Contract</h1>
       <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="title">Title:</label>
+        <div className='form-group mt-3'>
+          <label htmlFor="title" className='form-label'>Title:</label>
           <input
             className="form-control"
             type="text"
@@ -46,10 +48,10 @@ export default function AddContractPage() {
             required
           />
         </div>
-        <div>
-          <label htmlFor="content">Content:</label>
+        <div className='form-group mt-3'>
+          <label htmlFor="content" className='form-label'>Content:</label>
           <input
-            className="form-control"
+            className="form-control form-control-lg"
             type="textarea"
             id="content"
             value={content}
@@ -57,7 +59,8 @@ export default function AddContractPage() {
             required
           />
         </div>
-        <button type="submit">Add Contract</button>
+
+        <button type="submit" className='btn btn-primary mt-3'>Add Contract</button>
       </form>
     </div>
   )

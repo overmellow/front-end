@@ -1,46 +1,44 @@
+'use client'
+
 import Link from 'next/link'
-import { PrismaClient, Contract } from '@prisma/client'
+import Navigation from '../components/Navigation'
+import { useEffect, useState } from 'react'
 
-async function getContracts() {
-  const prisma = new PrismaClient()
-  try {
-    const contracts = await prisma.contract.findMany({
-      // You can add sorting or filtering here if needed
-      // orderBy: { createdAt: 'desc' },
-    })
-    return contracts
-  } catch (error) {
-    console.error('Error fetching contracts:', error)
-    return []
-  } finally {
-    await prisma.$disconnect()
-  }
-}
+import Contract from '../types/Contract'
+import { Contract as ModelContract } from '../models/Contract'
+import { withAuth } from '../components/withAuth'
 
-export default async function ContractsPage() {
-  const contracts = await getContracts()
+function ContractsPage() {  
+  const [contracts, setContracts] = useState(null)
+ 
+  useEffect(() => {
+    async function fetchContracts() {
+      let res = await fetch('/api/contracts')
+      let data = await res.json()
+      setContracts(data)
+    }
+    fetchContracts()
+  }, [])
+
+  if (!contracts) return <div>Loading...</div>
 
   return (
-    <div>
+    <div className="container mt-5">
+      <Navigation />
       <h1>Contracts</h1>
       <Link href="/contracts/add">
-        <button>Add New Contract</button>
+        <button className="btn btn-primary mb-3">Add New Contract</button>
       </Link>
-      {contracts.length === 0 ? (
-        <p>No contracts found.</p>
-      ) : (
-        <ul>
-          {contracts.map((contract) => (
-            <li key={contract.id}>
-              {/* Adjust these fields based on your Contract model */}
-              <h2>{contract.title}</h2>
-              <p>ID: {contract.id}</p>
-              <p>Content: {contract.content}</p>
-              {/* Add more contract details as needed */}
-            </li>
-          ))}
-        </ul>
-      )}
+
+      <div className="list-group">
+        {contracts.map((contract: ModelContract) => (
+        <div key={contract.id} className="list-group-item">
+          <Contract contract={contract} />
+        </div>
+        ))}
+      </div>
     </div>
   )
 }
+
+export default withAuth(ContractsPage)
