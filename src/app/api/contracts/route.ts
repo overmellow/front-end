@@ -18,8 +18,8 @@ export async function GET(request: NextRequest) {
 
 async function handleGetRequest(request: NextRequest) {
     await dbConnect();
-    const contracts = await Contract.find({});
-    console.log(contracts)
+    const userId = request.headers.get('user-id') || request.nextUrl.searchParams.get('userId');
+    const contracts = await Contract.find({ $or: [{ owner: userId }, { parties: userId }] });
     return NextResponse.json(contracts, { status: 200 })
 }  
 
@@ -27,18 +27,19 @@ async function handlePostRequest(request: NextRequest) {
   console.log('Received POST request to /api/contracts')
   
   const body = await request.json()
-  console.log('Request body:', body)
 
-  const { title, content } = body
-  if (!title || !content) {
-    console.log('Missing title or status')
-    return NextResponse.json({ error: 'Title and status are required' }, { status: 400 })
+  const { title, content, userId, parties } = body
+  if (!title || !content || !userId) {
+    console.log('Missing required fields')
+    return NextResponse.json({ error: 'Title, content, and userId are required' }, { status: 400 })
   }
 
-  console.log('Attempting to create contract with Prisma')
+  console.log('Attempting to create contract with Mongoose')
   const newContract = await Contract.create({
     title: title,
     content: content,
+    owner: userId,
+    parties: parties, // Add this line
   })
 
   console.log('Contract created successfully:', newContract)

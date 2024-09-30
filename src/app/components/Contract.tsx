@@ -1,4 +1,4 @@
-import { Contract as ContractType } from "../schemas/Contract"
+import { Contract as ContractType } from "@/app/schemas/Contract";
 
 function Contract(props: { contract: ContractType }) {
     return (<>

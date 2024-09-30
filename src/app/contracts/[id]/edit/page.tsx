@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { useParams, useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { withAuth } from '@/app/components/withAuth'
 
@@ -11,13 +11,26 @@ function AddContractPage() {
   const [parties, setParties] = useState([''])
   const router = useRouter()
   const { data: session, status } = useSession()
+  const params = useParams()
+
+  useEffect(() => {
+    async function fetchContracts() {
+      let res = await fetch(`/api/contracts/${params.id}`)
+      let data = await res.json()
+      // setContract(data)
+      setTitle(data.title)
+      setContent(data.content)
+      setParties(data.parties)
+    }
+    fetchContracts()
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     try {
-      const response = await fetch('/api/contracts', {
-        method: 'POST',
+      const response = await fetch(`/api/contracts/${params.id}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -101,7 +114,7 @@ function AddContractPage() {
             Add Party
           </button>
         </div>
-        <button type="submit" className='btn btn-primary mt-3'>Add Contract</button>
+        <button type="submit" className='btn btn-primary mt-3'>Save Edited Contract</button>
       </form>
     </div>
   )
