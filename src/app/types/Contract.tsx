@@ -1,8 +1,8 @@
-import { Contract as ModelContract } from "../models/Contract"
+import { Contract as ContractType } from "../schemas/Contract"
 
-function Contract(props: { contract: ModelContract }) {
+function Contract(props: { contract: ContractType }) {
     return (<>
-        <h3>{props.contract.id}: {props.contract.title}</h3>
+        <h3>{props.contract._id}: {props.contract.title}</h3>
     </>  );
 }
 

@@ -1,13 +1,13 @@
 import NextAuth from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
-import { PrismaClient } from "@prisma/client"
-import { PrismaAdapter } from "@next-auth/prisma-adapter"
+import { MongoDBAdapter } from "@auth/mongodb-adapter"
 import { compare } from "bcrypt"
-
-const prisma = new PrismaClient()
+import clientPromise from "@/lib/mongodb"
+import User from "@/app/schemas/User"
+import dbConnect from "@/lib/dbConnect"
 
 const handler = NextAuth({
-  adapter: PrismaAdapter(prisma),
+  adapter: MongoDBAdapter(clientPromise),
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -20,22 +20,22 @@ const handler = NextAuth({
           return null
         }
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email }
-        })
+        await dbConnect()
+
+        const user = await User.findOne({ email: credentials.email })
         
         if (!user) {
           return null
         }
 
         const isPasswordValid = await compare(credentials.password, user.password)
-        console.log(isPasswordValid)
+
         if (!isPasswordValid) {
           return null
         }
 
         return {
-          id: user.id,
+          id: user._id.toString(),
           email: user.email,
           name: user.name,
         }

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import dbConnect from '@/lib/dbConnect';
+import Contract from '@/app/schemas/Contract';
 
 export async function POST(request: NextRequest) {
   return handlePostRequest(request).catch((error) => {
@@ -18,8 +17,9 @@ export async function GET(request: NextRequest) {
   }
 
 async function handleGetRequest(request: NextRequest) {
-    const contracts = await prisma.contract.findMany({
-    })
+    await dbConnect();
+    const contracts = await Contract.find({});
+    console.log(contracts)
     return NextResponse.json(contracts, { status: 200 })
 }  
 
@@ -30,19 +30,15 @@ async function handlePostRequest(request: NextRequest) {
   console.log('Request body:', body)
 
   const { title, content } = body
-  console.log('Title:', title)
-  console.log('Content:', content)
   if (!title || !content) {
     console.log('Missing title or status')
     return NextResponse.json({ error: 'Title and status are required' }, { status: 400 })
   }
 
   console.log('Attempting to create contract with Prisma')
-  const newContract = await prisma.contract.create({
-    data: {
-        title: title,
-        content: content,
-    },
+  const newContract = await Contract.create({
+    title: title,
+    content: content,
   })
 
   console.log('Contract created successfully:', newContract)

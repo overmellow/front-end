@@ -1,32 +1,45 @@
-import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { NextResponse, NextRequest } from 'next/server'
+import dbConnect from '@/lib/dbConnect';
 import { hash } from 'bcrypt'
+import User from '@/app/schemas/User' // Assume we have a User model defined
 
-const prisma = new PrismaClient()
+export async function POST(request: NextRequest) {
+  return handlePostRequest(request).catch((error) => {
+    console.error('Unhandled error in POST /api/contracts:', error)
+    return NextResponse.json({ error: 'Internal Server Error', details: error.message }, { status: 500 })
+  })
+}
 
-export async function POST(req: Request) {
+
+async function handlePostRequest(request: NextRequest) {
+  await dbConnect();
   try {
-    const { name, email, password } = await req.json()
-
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    })
-    
+    const { name, email, password } = await request.json()
+    console.log(name, email, password)
+    const existingUser = await User.findOne({ email: email })
+    console.log(existingUser)
     if (existingUser) {
       return NextResponse.json({ error: 'User already exists' }, { status: 400 })
     }
 
     const hashedPassword = await hash(password, 10)
-
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-      },
+    // const demoUser = await User.create({
+    //   name: 'iman',
+    //   email: 'iman@mail.com',
+    //   password: '111',
+    // })
+    const newUser = await User.create({
+      name: name,
+      email: email,
+      password: hashedPassword,
     })
-
-    return NextResponse.json({ user: { id: user.id, name: user.name, email: user.email } })
+    // const newUser = {
+    //   name: 'name',
+    //   email: 'email',
+    //   password: 'password',
+    // }
+    console.log(newUser)
+    return NextResponse.json(newUser, { status: 201 })  
   } catch (error) {
     return NextResponse.json({ error: 'An error occurred during signup' }, { status: 500 })
   }
