@@ -57,9 +57,9 @@ function ContractsPage() {
           <p>id: {contract._id}</p>
           <p>title: {contract.title}</p>
           <p>content: {contract.content}</p>
-          <p>owner: {contract.owner}</p>
-          {(contract as Contract).parties.map((p: Party) => 
-            <p key={p}>parties: {p}</p>
+          <p>owner: {contract.owner.name}</p>
+          {(contract as Contract).parties.map((p: any) => 
+            <p key={p._id}>parties: {p.email}</p>
           )}        
         </div>
         )}

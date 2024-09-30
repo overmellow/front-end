@@ -25,6 +25,21 @@ function AddContractPage() {
     fetchContracts()
   }, [])
 
+    const handleDelete = async () => {
+    try {
+      const res = await fetch(`/api/contracts/${params.id}`, {
+        method: 'DELETE',
+      })
+      if (res.ok) {
+        router.push('/contracts')
+      } else {
+        console.error('Failed to delete contract')
+      }
+    } catch (error) {
+      console.error('Error deleting contract:', error)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     

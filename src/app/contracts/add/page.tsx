@@ -24,8 +24,8 @@ function AddContractPage() {
         body: JSON.stringify({ 
           title, 
           content, 
-          userId: session?.user?.id || '',
-          parties: parties.filter(party => party.trim() !== '')
+          userEmail: session?.user?.email || '',
+          partyEmails: parties.filter(party => party.trim() !== '')
         }),
       })
 
@@ -87,7 +87,7 @@ function AddContractPage() {
             <div key={index} className="input-group mb-2">
               <input
                 className="form-control"
-                type="text"
+                type="email"
                 value={party}
                 onChange={(e) => handlePartyChange(index, e.target.value)}
                 placeholder="Enter party email"

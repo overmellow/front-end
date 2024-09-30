@@ -12,7 +12,9 @@ export async function GET(request: NextRequest,{ params }: { params: { id: strin
 async function handleGetRequest(request: NextRequest, params: { id: string }) {
   const { id } = params
   await dbConnect();
-  const contract = await Contract.findById(id);
+  const contract = await Contract.findById(id)
+    .populate('owner') // Add this line to populate owner's name and email
+    .populate('parties');
   console.log('Found contract:', contract)
   if (!contract) {
     return NextResponse.json({ error: 'Contract not found' }, { status: 404 })
