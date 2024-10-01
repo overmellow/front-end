@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import dbConnect from '@/lib/dbConnect';
 import Contract from '@/app/schemas/Contract';
+import User from '@/app/schemas/User'
 
 export async function GET(request: NextRequest,{ params }: { params: { id: string } }) {
   return handleGetRequest(request, params).catch((error) => {
@@ -55,16 +56,19 @@ async function handlePutRequest(request: NextRequest, params: { id: string }) {
 
   const body = await request.json()
 
-  const { title, content, userId, parties } = body
+  const { title, content, userId, partyEmails } = body
+  console.log('partyEmails:', partyEmails)
   if (!title || !content || !userId) {
     console.log('Missing required fields')
     return NextResponse.json({ error: 'Title, content, and userId are required' }, { status: 400 })
   }
 
+  const parties = await User.find({ email: { $in: partyEmails } })
+	console.log('Parties:', parties)
   const contract = await Contract.findByIdAndUpdate(id, {
     title: title,
     content: content,
-    parties: parties
+		parties: parties.map(party => party._id)
   });
 
   if (!contract) {

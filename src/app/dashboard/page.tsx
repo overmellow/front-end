@@ -1,26 +1,16 @@
 'use client'
 
-import { withAuth } from '../components/withAuth'
-import { signOut, useSession } from 'next-auth/react'
-import Link from 'next/link'
+import { withAuth } from '@/app/components/withAuth'
 
 function DashboardPage() {
-  const { data: session } = useSession()
 
   return (
-    <div className="container mt-5">
-      <ul>
-        <li><Link href="/contracts">Contracts</Link></li>
-      </ul>
-      <h1>Dashboard</h1>
-      <p>Welcome to your dashboard, {session?.user?.email}. This is a protected page.</p>
-      <button 
-        className="btn btn-danger" 
-        onClick={() => signOut({ callbackUrl: '/' })}
-      >
-        Log out
-      </button>
-    </div>
+    <>
+      <div className="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 className="h2">Dashboard</h1>
+      </div>
+      <p>Welcome to your dashboard. This is a protected page.</p> 
+    </>
   )
 }
 

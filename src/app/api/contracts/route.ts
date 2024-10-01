@@ -13,10 +13,10 @@ export async function POST(request: NextRequest) {
 	if (!owner) {
 		return NextResponse.json({ error: 'Owner not found' }, { status: 404 })
 	}
-
+	console.log('partyEmails:', partyEmails)
 	// Find party users by email
 	const parties = await User.find({ email: { $in: partyEmails } })
-
+	console.log('Parties:', parties)
 	const contract = new Contract({
 		title,
 		content,
