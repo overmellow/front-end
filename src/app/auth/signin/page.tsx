@@ -4,6 +4,7 @@ import { signIn } from 'next-auth/react'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import '@/app/auth/signin/signin.css'
 
 export default function SignIn() {
   const [email, setEmail] = useState('mori@mail.com')
@@ -24,17 +25,19 @@ export default function SignIn() {
     if (result?.error) {
       setError('Invalid email or password')
     } else if (result?.ok) {
-      router.push('/dashboard')
+      router.push('/dashboard/contracts')
     }
   }
 
   return (
-    <div className="container mt-5 max-w-md mx-auto">
-        <h1 className="mb-4">Sign In</h1>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-3">
-            <label htmlFor="email" className="form-label">Email</label>
-            <input
+    <>
+    <main className="form-signin w-100 m-auto">
+      <form onSubmit={handleSubmit}>
+        {/* <img className="mb-4" src="../assets/brand/bootstrap-logo.svg" alt="" width="72" height="57"/> */}
+        <h1 className="h3 mb-3 fw-normal">Please sign in</h1>
+
+        <div className="form-floating">
+          <input
               type="text"
               className="form-control"
               id="email"
@@ -42,10 +45,10 @@ export default function SignIn() {
               onChange={(e) => setEmail(e.target.value)}
               required
             />
-          </div>
-          <div className="mb-3">
-            <label htmlFor="password" className="form-label">Password</label>
-            <input
+          <label htmlFor="floatingInput">Email address</label>
+        </div>
+        <div className="form-floating">
+        <input
               type="password"
               className="form-control"
               id="password"
@@ -53,13 +56,20 @@ export default function SignIn() {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
-          </div>
-          <button type="submit" className="btn btn-primary">Sign In</button>
-        </form>
-        {error && <p className="text-red-500 mt-4">{error}</p>}
-        <p className="mt-4">
+          <label htmlFor="floatingPassword">Password</label>
+        </div>
+
+        <div className="form-check text-start my-3">
+          {/* <input className="form-check-input" type="checkbox" value="remember-me" id="flexCheckDefault"/> */}
+          <label className="form-check-label" htmlFor="flexCheckDefault">
           Don't have an account? <Link href="/auth/signup" className="text-blue-500">Sign Up</Link>
-        </p>
-    </div>
+          </label>
+        </div>
+        <button className="btn btn-primary w-100 py-2" type="submit">Sign in</button>
+        {error && <p className="text-red-500 mt-4">{error}</p>}
+        <p className="mt-5 mb-3 text-body-secondary" id="copyright">&copy; 2017–2024</p>
+      </form>
+      </main>
+    </>
   )
 }

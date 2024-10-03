@@ -16,9 +16,8 @@ export default function AuthStatus() {
   }
   return (
     <>
-      Not signed in <br />
       <div className="d-flex gap-3 mb-4">
-      <Link href="/auth/signin" className="btn btn-primary">Sign in</Link>
+        <Link href="/auth/signin" className="btn btn-primary">Sign in</Link>
       </div>
     </>
   )

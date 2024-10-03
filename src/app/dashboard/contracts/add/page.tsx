@@ -1,21 +1,26 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { withAuth } from '@/app/components/withAuth'
 import Link from 'next/link'
+import { v4 as uuidv4 } from 'uuid';
 
 function AddContractPage() {
   const [title, setTitle] = useState('')
-  const [content, setContent] = useState('')
   const [parties, setParties] = useState([''])
+  const [clauses, setClauses] = useState([{ id: '', content: '' }])
   const router = useRouter()
   const { data: session, status } = useSession()
 
+  useEffect(() => {
+    setParties([session?.user?.email || ''])
+  }, [session])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     try {
       const response = await fetch('/api/contracts', {
         method: 'POST',
@@ -23,8 +28,8 @@ function AddContractPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          title, 
-          content, 
+          title: title,
+          clauses: clauses,
           userEmail: session?.user?.email || '',
           partyEmails: parties.filter(party => party.trim() !== '')
         }),
@@ -32,7 +37,7 @@ function AddContractPage() {
 
       if (response.ok) {
         router.push('/dashboard/contracts')
-        router.refresh()
+        // router.refresh()
       } else {
         console.error('Failed to add contract')
       }
@@ -51,9 +56,26 @@ function AddContractPage() {
     setParties([...parties, ''])
   }
 
-  const removeParty = (index: number) => {
+  const removeParty = (index: number, party: string) => {
+    if (party === session?.user?.email) {
+      return
+    }
     const newParties = parties.filter((_, i) => i !== index)
     setParties(newParties)
+  }
+
+  const addClause = () => {
+    setClauses([...clauses, { id: uuidv4(), content: '' }])
+  }
+
+  const removeClause = (id: string) => {
+    setClauses(clauses.filter(clause => clause.id !== id))
+  }
+
+  const handleClauseChange = (id: string, field: 'content', value: string) => {
+    setClauses(clauses.map(clause => 
+      clause.id === id ? { ...clause, [field]: value } : clause
+    ))
   }
 
   return (
@@ -68,8 +90,9 @@ function AddContractPage() {
     </div>
 
     <form onSubmit={handleSubmit}>
-      <div className='form-group mt-3'>
-        <label htmlFor="title" className='form-label'>Title:</label>
+      <div className='input-group mb-3'>
+        <span className="input-group-text" id="basic-addon1">Title</span>
+        <label htmlFor="title" className='form-label'></label>
         <input
           className="form-control"
           type="text"
@@ -79,21 +102,37 @@ function AddContractPage() {
           required
         />
       </div>
-      <div className='form-group mt-3'>
-        <label htmlFor="content" className='form-label'>Content:</label>
-        <input
-          className="form-control form-control-lg form-control-textarea"
-          type="textarea"
-          id="content"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          required
-        />
+
+      <div className="card">
+        <div className="card-header">
+        Clauses
+        </div>
+        <ul className="list-group list-group-flush">
+          {clauses.map((clause) => (
+          <li className="list-group-item" key={clause.id || uuidv4()}>
+            <div className='row'>
+              <div className='col-11'>
+                <textarea className="form-control" value={clause.content} onChange={(e) => handleClauseChange(clause.id, 'content', e.target.value)}
+            placeholder="Clause"
+            rows={3}
+                />
+              </div>
+              <div className='col-1 d-flex align-items-center'>
+                <button type="button" className="btn btn-outline-danger btn-sm" onClick={() => removeClause(clause.id)}>X</button>
+              </div>
+            </div>
+          </li>
+          ))}
+        </ul>
+        <div className="card-footer d-flex justify-content-end">
+          <button type="button" className="btn btn-outline-primary btn-sm" onClick={addClause}>Add Clause</button>
+        </div>
       </div>
+
       <div className='form-group mt-3'>
-        <label className='form-label'>Parties:</label>
         {parties.map((party, index) => (
           <div key={index} className="input-group mb-2">
+            <span className="input-group-text" id="basic-addon1">Party</span>
             <input
               className="form-control"
               type="email"
@@ -101,12 +140,11 @@ function AddContractPage() {
               onChange={(e) => handlePartyChange(index, e.target.value)}
               placeholder="Enter party email"
             />
-            <button type="button" className="btn btn-outline-secondary" onClick={() => removeParty(index)}>
+            <button type="button" className="btn btn-outline-secondary" onClick={() => removeParty(index, party)}>
               Remove
             </button>
           </div>
         ))}
-
       </div>
 
       <div className='d-flex justify-content-end'>

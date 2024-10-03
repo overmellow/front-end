@@ -5,14 +5,16 @@ import { useParams, useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { withAuth } from '@/app/components/withAuth'
 import Link from 'next/link'
+import { v4 as uuidv4 } from 'uuid';
+import Clause from '@/app/schemas/Clause'
 
 function EditContractPage() {
   const [title, setTitle] = useState('')
-  const [content, setContent] = useState('')
   const [parties, setParties] = useState([]) // Initialize with an empty string
   const [isLoading, setIsLoading] = useState(true) // Add this line
+  const [clauses, setClauses] = useState<Array<{ _id: string, content: string }>>([])
   const router = useRouter()
-  const { data: session, status } = useSession()
+  const { data: session } = useSession()
   const params = useParams()
   const [showDeleteModal, setShowDeleteModal] = useState(false)
 
@@ -23,8 +25,8 @@ function EditContractPage() {
         let res = await fetch(`/api/contracts/${params.id}`)
         let data = await res.json()
         setTitle(data.title)
-        setContent(data.content)
         setParties(data.parties.length > 0 ? data.parties : ['']) // Ensure there's always at least one empty string
+        setClauses(data.clauses || []) // Add this line
       } catch (error) {
         console.error('Error fetching contract:', error)
       } finally {
@@ -51,10 +53,9 @@ function EditContractPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    let my = parties.filter(party => party.email.trim() !== '')
     // Extract only the email addresses from the parties array
-    const partyEmails = parties.map(party => party.email.trim()).filter(email => email !== '')
-    console.log('my:', partyEmails)
+    // const partyEmails = parties.map((party: { email: string }) => party.email.trim()).filter((email: string) => email !== '')
+    
     try {
       const response = await fetch(`/api/contracts/${params.id}`, {
         method: 'PUT',
@@ -62,10 +63,10 @@ function EditContractPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          title, 
-          content, 
+          title,
           userId: session?.user?.id || '',
-          partyEmails: parties.map(party => party.email.trim()).filter(email => email !== '')
+          partyEmails: parties.map((party: { email: string }) => party.email.trim()).filter((email: string) => email !== ''),
+          clauses // Add this line
         }),
       })
 
@@ -82,11 +83,8 @@ function EditContractPage() {
 
   const handlePartyChange = (index: number, value: string) => {
     const newParties = [...parties]
-    console.log('New Parties:', newParties)
     newParties[index] = {email: value}
-    console.log('New Parties:', newParties)
     setParties(newParties)
-    console.log('Parties:', parties)
   }
 
   const addParty = () => {
@@ -99,45 +97,74 @@ function EditContractPage() {
     setParties(newParties)
   }
 
+  const addClause = () => {
+    setClauses([...clauses, { id: uuidv4(), content: '' }])
+  }
+
+  const removeClause = (id: string) => {
+    setClauses(clauses.filter(clause => clause._id !== id))
+  }
+
+  const handleClauseChange = (id: string, field: 'content', value: string) => {
+    setClauses(clauses.map(clause => 
+      clause.id === id ? { ...clause, [field]: value } : clause
+    ))
+  }
+
   return (
     <>
     <div className="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 className="h2">Contract Edit</h1>
     <div className="btn-toolbar mb-2 mb-md-0">
-    <Link href={`/dashboard/contracts/${params.id}`} className='me-2'>
-        <button className="btn btn-outline-secondary mb-3 btn-sm">Cancel</button>
-      </Link>
-      <Link href="#" className='me-2'>
-        <button className="btn btn-outline-danger btn-sm" onClick={() => setShowDeleteModal(true)}>Delete</button>
-      </Link>
+        <Link href={`/dashboard/contracts/${params.id}`} className='me-2'>
+            <button className="btn btn-outline-secondary mb-3 btn-sm">Cancel</button>
+          </Link>
+          <Link href="#" className='me-2'>
+            <button className="btn btn-outline-danger btn-sm" onClick={() => setShowDeleteModal(true)}>Delete</button>
+          </Link>
+        </div>
     </div>
-</div>
-      <form onSubmit={handleSubmit}>
-        <div className='form-group mt-3'>
-          <label htmlFor="title" className='form-label'>Title:</label>
-          <input
-            className="form-control"
-            type="text"
-            id="title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            required
-          />
+    <form onSubmit={handleSubmit}>
+      <div className='input-group mt-3'>
+      <span className="input-group-text" id="basic-addon1">Title</span>
+        <input
+          className="form-control"
+          type="text"
+          id="title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
+        />
+      </div>
+
+  <div className="card mt-3">
+        <div className="card-header">Clauses</div>
+        <ul className="list-group list-group-flush">
+          {clauses.map((clause) => (
+            <li className="list-group-item" key={clause._id}>
+              <div className='row'>
+                <div className='col-11'>
+                  <textarea className="form-control" value={clause.content} onChange={(e) => handleClauseChange(clause._id, 'content', e.target.value)}
+              placeholder="Clause"
+              rows={3}
+                  />
+                </div>
+                <div className='col-1 d-flex align-items-center'>
+                  <button type="button" className="btn btn-outline-danger btn-sm" onClick={() => removeClause(clause._id)}>X</button>
+                </div>
+              </div>
+            </li>
+        ))}
+        </ul>
+        <div className="card-footer d-flex justify-content-end">
+          <button type="button" className="btn btn-outline-primary btn-sm" onClick={addClause}>Add Clause</button>
         </div>
+      </div>
+
         <div className='form-group mt-3'>
-          <label htmlFor="content" className='form-label'>Content:</label>
-          <input
-            className="form-control form-control-lg form-control-textarea"
-            type="textarea"
-            id="content"            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            required
-          />
-        </div>
-        <div className='form-group mt-3'>
-          <label className='form-label'>Parties:</label>
-          {parties.map((party, index) => (
+          {parties.map((party: { email: string }, index: number) => (
             <div key={index} className="input-group mb-2">
+              <span className="input-group-text" id="basic-addon1">Party</span>
               <input
                 className="form-control"
                 type="text"

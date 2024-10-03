@@ -2,31 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import dbConnect from '@/lib/dbConnect'
 import Contract from '@/app/schemas/Contract'
 import User from '@/app/schemas/User'
-
+import Clause from '@/app/schemas/Clause'
 export async function POST(request: NextRequest) {
-	await dbConnect()
-
-	const { title, content, userEmail, partyEmails } = await request.json()
-
-	// Find the owner user by email
-	const owner = await User.findOne({ email: userEmail })
-	if (!owner) {
-		return NextResponse.json({ error: 'Owner not found' }, { status: 404 })
-	}
-	console.log('partyEmails:', partyEmails)
-	// Find party users by email
-	const parties = await User.find({ email: { $in: partyEmails } })
-	console.log('Parties:', parties)
-	const contract = new Contract({
-		title,
-		content,
-		owner: owner._id,
-		parties: parties.map(party => party._id)
+	return handlePostRequest(request).catch((error) => {
+		console.error('Unhandled error in POST /api/contracts:', error)
+		return NextResponse.json({ error: 'Internal Server Error', details: error.message }, { status: 500 })
 	})
-
-	await contract.save()
-
-	return NextResponse.json(contract, { status: 201 })
 }
 
 export async function GET(request: NextRequest) {
@@ -44,24 +25,33 @@ async function handleGetRequest(request: NextRequest) {
 }
 
 async function handlePostRequest(request: NextRequest) {
-	console.log('Received POST request to /api/contracts')
 	
-	const body = await request.json()
+	await dbConnect()
 
-	const { title, content, userId, parties } = body
-	if (!title || !content || !userId) {
-		console.log('Missing required fields')
-		return NextResponse.json({ error: 'Title, content, and userId are required' }, { status: 400 })
+	const { title, clauses, userEmail, partyEmails } = await request.json()
+
+	const newClauses = await Promise.all(clauses.map(async (clause: any) => {
+		const newClause = new Clause(clause);
+		await newClause.save();
+		return newClause;
+	}));
+	// Find the owner user by email
+	const owner = await User.findOne({ email: userEmail })
+	if (!owner) {
+		return NextResponse.json({ error: 'Owner not found' }, { status: 404 })
 	}
 
-	console.log('Attempting to create contract with Mongoose')
-	const newContract = await Contract.create({
+	// Find party users by email
+	const parties = await User.find({ email: { $in: partyEmails } })
+
+	const contract = new Contract({
 		title: title,
-		content: content,
-		owner: userId,
-		parties: parties, // Add this line
+		clauses: newClauses,
+		owner: owner._id,
+		parties: parties.map(party => party._id)
 	})
 
-	console.log('Contract created successfully:', newContract)
-	return NextResponse.json(newContract, { status: 201 })
+	await contract.save()
+	// const contract = {}
+	return NextResponse.json({ status: 201 })
 }

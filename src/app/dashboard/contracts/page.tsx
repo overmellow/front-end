@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import Navigation from '@/app/components/Navigation'
 import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 
@@ -12,7 +11,7 @@ import { withAuth } from '@/app/components/withAuth'
 
 function ContractsPage() {  
   const [contracts, setContracts] = useState(null)
-  const { data: session, status } = useSession()
+  const { data: session } = useSession()
  
   useEffect(() => {
     async function fetchContracts() {

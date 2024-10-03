@@ -10,8 +10,9 @@ export function withAuth(Component: React.ComponentType) {
     const router = useRouter()
 
     useEffect(() => {
-      if (status === 'loading') return // Do nothing while loading
-      if (!session) router.push('/auth/signin')
+      console.log('status:', status)
+      if (status === 'loading' || status === 'authenticated') return // Do nothing while loading
+      if (!session || status === 'unauthenticated') router.push('/auth/signin')  
     }, [session, status, router])
 
     if (status === 'loading') {

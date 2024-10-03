@@ -34,7 +34,11 @@ function ContractsPage() {
         <div className="panel panel-default">
           <p>id: {contract._id}</p>
           <p>title: {contract.title}</p>
-          <p>content: {contract.content}</p>
+         
+          {(contract as Contract).clauses?.map((c: any) => 
+            <p key={c._id}>clauses: {c.content}</p>
+          )}
+          <hr />
           <p>owner: {contract.owner.name}</p>
           {(contract as Contract).parties.map((p: any) => 
             <p key={p._id}>parties: {p.email}</p>

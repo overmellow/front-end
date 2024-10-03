@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const contractSchema = new mongoose.Schema({
   title: { type: String },
-  content: { type: String },
+  clauses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Clause' }],
   owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   parties: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
 }, { timestamps: true });
