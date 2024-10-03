@@ -5,8 +5,8 @@ import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 
 import Contract from '@/app/components/Contract'
-import { Contract as ContractType } from '@/app/schemas/Contract'
 import { withAuth } from '@/app/components/withAuth'
+import { ContractI } from '@/app/interfaces/ContractI'
 
 
 function ContractsPage() {  
@@ -38,9 +38,9 @@ function ContractsPage() {
       </div>
 
       <div className="list-group list-group-flush">
-        {(contracts as ContractType[]).map((contract: ContractType) => (
-        <div key={contract._id} className="list-group-item">
-            <Link href={`/dashboard/contracts/${contract._id}`}>
+        {(contracts as ContractI[]).map((contract: ContractI) => (
+        <div key={contract._id?.toString()} className="list-group-item">
+            <Link href={`/dashboard/contracts/${contract._id?.toString()}`}>
               <Contract contract={contract} />
             </Link>
           </div>

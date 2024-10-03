@@ -7,12 +7,16 @@ import { withAuth } from '@/app/components/withAuth'
 import Link from 'next/link'
 import { v4 as uuidv4 } from 'uuid';
 import Clause from '@/app/schemas/Clause'
+import { ClauseI } from '@/app/interfaces/ClauseI'
+import { PartyI } from '@/app/interfaces/PartyI'
+import { UserI } from '@/app/interfaces/UserI'
 
 function EditContractPage() {
   const [title, setTitle] = useState('')
-  const [parties, setParties] = useState([]) // Initialize with an empty string
-  const [isLoading, setIsLoading] = useState(true) // Add this line
-  const [clauses, setClauses] = useState<Array<{ _id: string, content: string }>>([])
+  const [owner, setOwner] = useState<UserI | null>(null)
+  const [parties, setParties] = useState<PartyI[]>([]);
+  const [isLoading, setIsLoading] = useState(true)
+  const [clauses, setClauses] = useState<Array<ClauseI>>([])
   const router = useRouter()
   const { data: session } = useSession()
   const params = useParams()
@@ -20,11 +24,12 @@ function EditContractPage() {
 
   useEffect(() => {
     async function fetchContracts() {
-      setIsLoading(true) // Add this line
+      setIsLoading(true)
       try {
         let res = await fetch(`/api/contracts/${params.id}`)
         let data = await res.json()
         setTitle(data.title)
+        setOwner(data.owner)
         setParties(data.parties.length > 0 ? data.parties : ['']) // Ensure there's always at least one empty string
         setClauses(data.clauses || []) // Add this line
       } catch (error) {
@@ -53,8 +58,7 @@ function EditContractPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Extract only the email addresses from the parties array
-    // const partyEmails = parties.map((party: { email: string }) => party.email.trim()).filter((email: string) => email !== '')
+
     
     try {
       const response = await fetch(`/api/contracts/${params.id}`, {
@@ -63,10 +67,9 @@ function EditContractPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          title,
-          userId: session?.user?.id || '',
+          title: title,
           partyEmails: parties.map((party: { email: string }) => party.email.trim()).filter((email: string) => email !== ''),
-          clauses // Add this line
+          clauses: clauses,
         }),
       })
 
@@ -83,22 +86,23 @@ function EditContractPage() {
 
   const handlePartyChange = (index: number, value: string) => {
     const newParties = [...parties]
-    newParties[index] = {email: value}
+    newParties[index] = {name: '', email: value}
     setParties(newParties)
   }
 
   const addParty = () => {
-    let newParty = {email: ''}
+    let newParty = {name: '', email: ''}
     setParties([...parties, newParty])
   }
 
   const removeParty = (index: number) => {
+    // if (party === session?.user?.email) return
     const newParties = parties.filter((_, i) => i !== index)
     setParties(newParties)
   }
 
   const addClause = () => {
-    setClauses([...clauses, { id: uuidv4(), content: '' }])
+    setClauses([...clauses, { _id: uuidv4(), content: '' }])
   }
 
   const removeClause = (id: string) => {
@@ -107,7 +111,7 @@ function EditContractPage() {
 
   const handleClauseChange = (id: string, field: 'content', value: string) => {
     setClauses(clauses.map(clause => 
-      clause.id === id ? { ...clause, [field]: value } : clause
+      clause._id === id ? { ...clause, [field]: value } : clause
     ))
   }
 
@@ -137,20 +141,23 @@ function EditContractPage() {
         />
       </div>
 
-  <div className="card mt-3">
+    <div className="card mt-3">
         <div className="card-header">Clauses</div>
         <ul className="list-group list-group-flush">
-          {clauses.map((clause) => (
-            <li className="list-group-item" key={clause._id}>
+          {clauses.map((clause: ClauseI) => (
+            <li className="list-group-item" key={clause._id as React.Key}>
               <div className='row'>
                 <div className='col-11'>
-                  <textarea className="form-control" value={clause.content} onChange={(e) => handleClauseChange(clause._id, 'content', e.target.value)}
-              placeholder="Clause"
-              rows={3}
+                  <textarea 
+                    className="form-control" 
+                    value={clause.content} 
+                    onChange={(e) => handleClauseChange(clause._id?.toString() ?? '', 'content', e.target.value)} 
+                    placeholder="Clause" 
+                    rows={3}
                   />
                 </div>
                 <div className='col-1 d-flex align-items-center'>
-                  <button type="button" className="btn btn-outline-danger btn-sm" onClick={() => removeClause(clause._id)}>X</button>
+                  <button type="button" className="btn btn-outline-danger btn-sm" onClick={() => removeClause(clause._id?.toString() ?? '')}>X</button>
                 </div>
               </div>
             </li>
@@ -158,6 +165,18 @@ function EditContractPage() {
         </ul>
         <div className="card-footer d-flex justify-content-end">
           <button type="button" className="btn btn-outline-primary btn-sm" onClick={addClause}>Add Clause</button>
+        </div>
+      </div>
+
+      <div className='form-group mt-3'>
+      <div className="input-group mb-2">
+      <span className="input-group-text" id="basic-addon1">Owner</span>
+      <input
+                className="form-control"
+                type="text"
+                value={owner?.email || ''}
+                readOnly disabled
+              />
         </div>
       </div>
 

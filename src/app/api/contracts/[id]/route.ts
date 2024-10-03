@@ -4,6 +4,9 @@ import Contract from '@/app/schemas/Contract';
 import User from '@/app/schemas/User'
 import mongoose from 'mongoose';
 import Clause from '@/app/schemas/Clause';
+import { ContractI } from '@/app/interfaces/ContractI';
+import { ClauseI } from '@/app/interfaces/ClauseI';
+
 export async function GET(request: NextRequest,{ params }: { params: { id: string } }) {
   return handleGetRequest(request, params).catch((error) => {
     console.error('Unhandled error in GET /api/contracts/[id]:', error)
@@ -57,22 +60,32 @@ async function handlePutRequest(request: NextRequest, params: { id: string }) {
 
   const body = await request.json()
 
-  const { title, clauses, userId, partyEmails } = body
-	const newClauses = await Promise.all(clauses.map(async (clause: any) => {
+  const { title, clauses, partyEmails } = body
+
+	const newClauses = await Promise.all(clauses.map(async (clause: ClauseI) => {
 		// Check if the clause already exists in the database
 		if (clause._id) {
 			// If it exists, update it instead of creating a new one
-			const existingClause = await Clause.findByIdAndUpdate(clause._id, clause, { new: true });
+			// Check if clause._id is a valid MongoDB ObjectId
+			if (!mongoose.Types.ObjectId.isValid(clause._id as string)) {
+				// If it's not valid, create a new clause
+				const newClause = new Clause({ content: clause.content });
+				await newClause.save();
+				return newClause;
+			}
+
+			const existingClause = await Clause.findByIdAndUpdate(clause._id, clause, { new: true }, );
 			if (existingClause) {
+        console.log('existingClause:', existingClause)
 				return existingClause;
 			}
 		}
-		const newClause = new Clause(clause);
+		const newClause = new Clause(clause.content);
 		await newClause.save();
 		return newClause;
 	}));
 
-  if (!title || !userId) {
+  if (!title) {
     console.log('Missing required fields')
     return NextResponse.json({ error: 'Title, content, and userId are required' }, { status: 400 })
   }

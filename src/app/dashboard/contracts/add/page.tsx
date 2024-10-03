@@ -6,11 +6,13 @@ import { useSession } from 'next-auth/react'
 import { withAuth } from '@/app/components/withAuth'
 import Link from 'next/link'
 import { v4 as uuidv4 } from 'uuid';
+import ContractStatus from '@/app/schemas/ContractStatus'
+import { ClauseI } from '@/app/interfaces/ClauseI'
 
 function AddContractPage() {
   const [title, setTitle] = useState('')
   const [parties, setParties] = useState([''])
-  const [clauses, setClauses] = useState([{ id: '', content: '' }])
+  const [clauses, setClauses] = useState<Array<ClauseI>>([{ _id: uuidv4(), content: '' }])
   const router = useRouter()
   const { data: session, status } = useSession()
 
@@ -22,6 +24,7 @@ function AddContractPage() {
     e.preventDefault()
 
     try {
+      console.log(session?.user?.email)
       const response = await fetch('/api/contracts', {
         method: 'POST',
         headers: {
@@ -30,7 +33,8 @@ function AddContractPage() {
         body: JSON.stringify({ 
           title: title,
           clauses: clauses,
-          userEmail: session?.user?.email || '',
+          // status: ContractStatus.DRAFT,
+          userEmail: await session?.user?.email,
           partyEmails: parties.filter(party => party.trim() !== '')
         }),
       })
@@ -57,24 +61,23 @@ function AddContractPage() {
   }
 
   const removeParty = (index: number, party: string) => {
-    if (party === session?.user?.email) {
-      return
-    }
+    if (party === session?.user?.email) return
     const newParties = parties.filter((_, i) => i !== index)
     setParties(newParties)
   }
 
   const addClause = () => {
-    setClauses([...clauses, { id: uuidv4(), content: '' }])
+    setClauses([...clauses, { _id: uuidv4(), content: '' }])
   }
 
-  const removeClause = (id: string) => {
-    setClauses(clauses.filter(clause => clause.id !== id))
+  const removeClause = (_id: string) => {
+    setClauses(clauses.filter(clause => clause._id !== _id))
   }
 
-  const handleClauseChange = (id: string, field: 'content', value: string) => {
+  const handleClauseChange = (_id: string, field: 'content', value: string) => {
+    console.log(_id)
     setClauses(clauses.map(clause => 
-      clause.id === id ? { ...clause, [field]: value } : clause
+      clause._id === _id ? { ...clause, [field]: value } : clause
     ))
   }
 
@@ -109,16 +112,18 @@ function AddContractPage() {
         </div>
         <ul className="list-group list-group-flush">
           {clauses.map((clause) => (
-          <li className="list-group-item" key={clause.id || uuidv4()}>
+          <li className="list-group-item" key={clause._id?.toString() || uuidv4()}>
             <div className='row'>
               <div className='col-11'>
-                <textarea className="form-control" value={clause.content} onChange={(e) => handleClauseChange(clause.id, 'content', e.target.value)}
-            placeholder="Clause"
-            rows={3}
+                <textarea className="form-control" 
+                value={clause.content} 
+                onChange={(e) => handleClauseChange(clause._id?.toString() ?? '', 'content', e.target.value)} 
+                placeholder="Clause" 
+                rows={3} 
                 />
               </div>
               <div className='col-1 d-flex align-items-center'>
-                <button type="button" className="btn btn-outline-danger btn-sm" onClick={() => removeClause(clause.id)}>X</button>
+                <button type="button" className="btn btn-outline-danger btn-sm" onClick={() => removeClause(clause._id?.toString() ?? '')}>X</button>
               </div>
             </div>
           </li>
