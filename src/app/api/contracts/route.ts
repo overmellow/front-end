@@ -29,8 +29,12 @@ export async function POST(request: NextRequest) {
 async function handlePostRequest(request: NextRequest) {	
 	await dbConnect()
 
-	const { title, clauses, userEmail, partyEmails } = await request.json()
-
+	const { title, clauses, status, userEmail, partyEmails } = await request.json()
+	console.log('title:', title)
+	console.log('clauses:', clauses)
+	console.log('status:', status)
+	console.log('userEmail:', userEmail)
+	console.log('partyEmails:', partyEmails)
 	const newClauses = await Promise.all(clauses.map(async (clause: ClauseI) => {
 		const { _id, ...clauseData } = clause;
 		const newClause = new Clause(clauseData);
@@ -48,6 +52,7 @@ async function handlePostRequest(request: NextRequest) {
 	const contract = new Contract({
 		title: title,
 		clauses: newClauses,
+		status: status,
 		owner: owner._id,
 		parties: parties.map(party => party._id)
 	})

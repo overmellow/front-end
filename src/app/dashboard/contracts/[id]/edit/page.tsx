@@ -6,10 +6,11 @@ import { useSession } from 'next-auth/react'
 import { withAuth } from '@/app/components/withAuth'
 import Link from 'next/link'
 import { v4 as uuidv4 } from 'uuid';
-import Clause from '@/app/schemas/Clause'
+
 import { ClauseI } from '@/app/interfaces/ClauseI'
 import { PartyI } from '@/app/interfaces/PartyI'
 import { UserI } from '@/app/interfaces/UserI'
+import ContractStatusEnum from '@/app/schemas/ContractStatusEnum'
 
 function EditContractPage() {
   const [title, setTitle] = useState('')
@@ -18,7 +19,7 @@ function EditContractPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [clauses, setClauses] = useState<Array<ClauseI>>([])
   const router = useRouter()
-  const { data: session } = useSession()
+  const [contractStatus, setContractStatus] = useState<ContractStatusEnum>();
   const params = useParams()
   const [showDeleteModal, setShowDeleteModal] = useState(false)
 
@@ -29,6 +30,7 @@ function EditContractPage() {
         let res = await fetch(`/api/contracts/${params.id}`)
         let data = await res.json()
         setTitle(data.title)
+        setContractStatus(data.status)
         setOwner(data.owner)
         setParties(data.parties.length > 0 ? data.parties : ['']) // Ensure there's always at least one empty string
         setClauses(data.clauses || []) // Add this line
@@ -58,7 +60,6 @@ function EditContractPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
     
     try {
       const response = await fetch(`/api/contracts/${params.id}`, {
@@ -141,24 +142,35 @@ function EditContractPage() {
         />
       </div>
 
+      <div className='form-group mt-3'>
+        <div className="input-group mb-2">
+          <span className="input-group-text" id="basic-addon1">Status</span>
+          <input
+            className="form-control"
+            type="text"
+            value={contractStatus}
+            readOnly disabled
+          />
+        </div>
+      </div>  
+
     <div className="card mt-3">
         <div className="card-header">Clauses</div>
         <ul className="list-group list-group-flush">
-          {clauses.map((clause: ClauseI) => (
+          {clauses.map((clause: ClauseI) => (            
             <li className="list-group-item" key={clause._id as React.Key}>
-              <div className='row'>
-                <div className='col-11'>
-                  <textarea 
-                    className="form-control" 
-                    value={clause.content} 
-                    onChange={(e) => handleClauseChange(clause._id?.toString() ?? '', 'content', e.target.value)} 
-                    placeholder="Clause" 
-                    rows={3}
-                  />
-                </div>
-                <div className='col-1 d-flex align-items-center'>
+              <div className="input-group ">
+                <textarea 
+                  className="form-control" 
+                  value={clause.content} 
+                  onChange={(e) => handleClauseChange(clause._id?.toString() ?? '', 'content', e.target.value)} 
+                  placeholder="Clause" 
+                  rows={3}
+                  >
+                </textarea>
+                <span className="input-group-text">
                   <button type="button" className="btn btn-outline-danger btn-sm" onClick={() => removeClause(clause._id?.toString() ?? '')}>X</button>
-                </div>
+                </span>
               </div>
             </li>
         ))}
@@ -169,14 +181,14 @@ function EditContractPage() {
       </div>
 
       <div className='form-group mt-3'>
-      <div className="input-group mb-2">
-      <span className="input-group-text" id="basic-addon1">Owner</span>
-      <input
-                className="form-control"
-                type="text"
-                value={owner?.email || ''}
-                readOnly disabled
-              />
+        <div className="input-group mb-2">
+          <span className="input-group-text" id="basic-addon1">Owner</span>
+          <input
+            className="form-control"
+            type="text"
+            value={owner?.email || ''}
+            readOnly disabled
+          />
         </div>
       </div>
 

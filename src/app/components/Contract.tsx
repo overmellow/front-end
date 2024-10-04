@@ -1,8 +1,8 @@
-import { Contract as ContractType } from "@/app/schemas/Contract";
+import { ContractI } from "../interfaces/ContractI";
 
-function Contract(props: { contract: ContractType }) {
+function Contract(props: { contract: ContractI }) {
     return (<>
-        <p className='mb-0'>{props.contract._id}: {props.contract.title}</p>
+        <p className='mb-0'>{props.contract._id?.toString()}: {props.contract.title}</p>
     </>  );
 }
 

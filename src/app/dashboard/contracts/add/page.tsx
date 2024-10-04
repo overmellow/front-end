@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react'
 import { withAuth } from '@/app/components/withAuth'
 import Link from 'next/link'
 import { v4 as uuidv4 } from 'uuid';
-import ContractStatus from '@/app/schemas/ContractStatus'
+import ContractStatusEnum from '@/app/schemas/ContractStatusEnum'
 import { ClauseI } from '@/app/interfaces/ClauseI'
 
 function AddContractPage() {
@@ -14,9 +14,11 @@ function AddContractPage() {
   const [parties, setParties] = useState([''])
   const [clauses, setClauses] = useState<Array<ClauseI>>([{ _id: uuidv4(), content: '' }])
   const router = useRouter()
-  const { data: session, status } = useSession()
+  const { data: session } = useSession()
+  const [contractStatus, setContractStatus] = useState<ContractStatusEnum>();
 
   useEffect(() => {
+    setContractStatus(ContractStatusEnum.DRAFT)
     setParties([session?.user?.email || ''])
   }, [session])
 
@@ -24,7 +26,6 @@ function AddContractPage() {
     e.preventDefault()
 
     try {
-      console.log(session?.user?.email)
       const response = await fetch('/api/contracts', {
         method: 'POST',
         headers: {
@@ -33,7 +34,7 @@ function AddContractPage() {
         body: JSON.stringify({ 
           title: title,
           clauses: clauses,
-          // status: ContractStatus.DRAFT,
+          status: ContractStatusEnum.DRAFT,
           userEmail: await session?.user?.email,
           partyEmails: parties.filter(party => party.trim() !== '')
         }),
@@ -75,7 +76,6 @@ function AddContractPage() {
   }
 
   const handleClauseChange = (_id: string, field: 'content', value: string) => {
-    console.log(_id)
     setClauses(clauses.map(clause => 
       clause._id === _id ? { ...clause, [field]: value } : clause
     ))
@@ -106,29 +106,41 @@ function AddContractPage() {
         />
       </div>
 
+      <div className='form-group mt-3'>
+        <div className="input-group mb-2">
+          <span className="input-group-text" id="basic-addon1">Status</span>
+          <input
+            className="form-control"
+            type="text"
+            value={contractStatus}
+            readOnly disabled
+          />
+        </div>
+      </div>  
+
       <div className="card">
         <div className="card-header">
         Clauses
         </div>
         <ul className="list-group list-group-flush">
           {clauses.map((clause) => (
-          <li className="list-group-item" key={clause._id?.toString() || uuidv4()}>
-            <div className='row'>
-              <div className='col-11'>
-                <textarea className="form-control" 
-                value={clause.content} 
-                onChange={(e) => handleClauseChange(clause._id?.toString() ?? '', 'content', e.target.value)} 
-                placeholder="Clause" 
-                rows={3} 
-                />
+            <li className="list-group-item" key={clause._id as React.Key || uuidv4()}>
+              <div className="input-group ">
+                <textarea 
+                  className="form-control" 
+                  value={clause.content} 
+                  onChange={(e) => handleClauseChange(clause._id?.toString() ?? '', 'content', e.target.value)} 
+                  placeholder="Clause" 
+                  rows={3}
+                  >
+                </textarea>
+                <span className="input-group-text">
+                  <button type="button" className="btn btn-outline-danger btn-sm" onClick={() => removeClause(clause._id?.toString() ?? '')}>X</button>
+                </span>
               </div>
-              <div className='col-1 d-flex align-items-center'>
-                <button type="button" className="btn btn-outline-danger btn-sm" onClick={() => removeClause(clause._id?.toString() ?? '')}>X</button>
-              </div>
-            </div>
-          </li>
-          ))}
-        </ul>
+            </li>  
+            ))}
+          </ul>
         <div className="card-footer d-flex justify-content-end">
           <button type="button" className="btn btn-outline-primary btn-sm" onClick={addClause}>Add Clause</button>
         </div>

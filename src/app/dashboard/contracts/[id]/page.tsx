@@ -4,9 +4,10 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { withAuth } from '@/app/components/withAuth'
 import { useParams } from 'next/navigation'
+import { ContractI } from '@/app/interfaces/ContractI'
 
 function ContractsPage() {  
-  const [contract, setContract] = useState(null)
+  const [contract, setContract] = useState<ContractI | null>(null)
   const params = useParams()
  
   useEffect(() => {
@@ -30,17 +31,17 @@ function ContractsPage() {
           </Link>
         </div>
       </div>
-        {contract && (
+        {contract  && (
         <div className="panel panel-default">
-          <p>id: {contract._id}</p>
+          <p>id: {contract._id?.toString()}</p>
           <p>title: {contract.title}</p>
-         
-          {(contract as Contract).clauses?.map((c: any) => 
+          <p>status: {contract.status}</p>
+          {contract.clauses?.map((c: any) => 
             <p key={c._id}>clauses: {c.content}</p>
           )}
           <hr />
-          <p>owner: {contract.owner.name}</p>
-          {(contract as Contract).parties.map((p: any) => 
+          <p>owner: {(contract.owner as any).name ?? contract.owner}</p>    
+          {contract.parties.map((p: any) => 
             <p key={p._id}>parties: {p.email}</p>
           )}        
         </div>

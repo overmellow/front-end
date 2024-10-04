@@ -4,7 +4,6 @@ import Contract from '@/app/schemas/Contract';
 import User from '@/app/schemas/User'
 import mongoose from 'mongoose';
 import Clause from '@/app/schemas/Clause';
-import { ContractI } from '@/app/interfaces/ContractI';
 import { ClauseI } from '@/app/interfaces/ClauseI';
 
 export async function GET(request: NextRequest,{ params }: { params: { id: string } }) {
@@ -60,7 +59,7 @@ async function handlePutRequest(request: NextRequest, params: { id: string }) {
 
   const body = await request.json()
 
-  const { title, clauses, partyEmails } = body
+  const { title, clauses, status, partyEmails } = body
 
 	const newClauses = await Promise.all(clauses.map(async (clause: ClauseI) => {
 		// Check if the clause already exists in the database
@@ -95,6 +94,7 @@ async function handlePutRequest(request: NextRequest, params: { id: string }) {
   const contract = await Contract.findByIdAndUpdate(id, {
     title: title,
     clauses: newClauses,
+    status: status,
     parties: parties.map(party => party._id)
   });
 

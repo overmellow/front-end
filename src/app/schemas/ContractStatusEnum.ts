@@ -1,4 +1,4 @@
-enum ContractStatus {
+enum ContractStatusEnum {
   DRAFT = 'DRAFT',
   FINALIZED = 'FINALIZED',
   SENT = 'SENT',
@@ -7,4 +7,4 @@ enum ContractStatus {
   ARCHIVED = 'ARCHIVED'
 }
 
-export default ContractStatus;
+export default ContractStatusEnum;

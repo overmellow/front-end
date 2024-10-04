@@ -1,10 +1,10 @@
 import mongoose from "mongoose";
-import ContractStatus from "./ContractStatus";
+import ContractStatusEnum from "./ContractStatusEnum";
 
 const contractSchema = new mongoose.Schema({
   title: { type: String },
   clauses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Clause' }],
-  // status: { type: String, enum: ContractStatus, default: ContractStatus.DRAFT },
+  status: { type: String, enum: ContractStatusEnum, default: ContractStatusEnum.DRAFT },
   owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   parties: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
 }, { timestamps: true });
