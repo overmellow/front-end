@@ -75,7 +75,6 @@ async function handlePutRequest(request: NextRequest, params: { id: string }) {
 
 			const existingClause = await Clause.findByIdAndUpdate(clause._id, clause, { new: true }, );
 			if (existingClause) {
-        console.log('existingClause:', existingClause)
 				return existingClause;
 			}
 		}

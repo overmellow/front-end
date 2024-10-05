@@ -104,85 +104,108 @@ function AddContractPage() {
     </div>
 
     <form onSubmit={handleSubmit}>
-      <div className='input-group mb-3'>
-        <span className="input-group-text" id="basic-addon1">Title</span>
-        <label htmlFor="title" className='form-label'></label>
-        <input
-          className="form-control"
-          type="text"
-          id="title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-        />
-      </div>
-
-      <div className='form-group mt-3'>
-        <div className="input-group mb-2">
-          <span className="input-group-text" id="basic-addon1">Status</span>
-          <input
-            className="form-control"
-            type="text"
-            value={contractStatus}
-            readOnly disabled
-          />
-        </div>
-      </div>  
-
-      <div className="card">
-        <div className='card-header'>
-          <div className="d-flex justify-content-between align-items-center">
-            <div>Clauses</div>
-            <button type="button" className="btn btn-outline-primary btn-sm" onClick={addClause}>+</button>
+    <div className='row'>
+      <div className='col-md-9'>
+        <div className="card">
+          <div className='card-header'>
+            <div className='input-group'>
+              <input
+                className="form-control no-outline title"
+                type="text"
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                required
+              />
+            </div>
           </div>
-        </div>
-        <div className="card-body">
-          {clauses.map((clause, index) => (
-            <div key={clause._id as React.Key || uuidv4()} className='clause-content-wrapper mb-3'
-            onKeyDown={keyDown}>
-              <div contentEditable={true} className='clause-content bg-light position-relative'
-                onFocus={(e) => e.currentTarget.nextElementSibling?.classList.remove('d-none')}
-                onBlur={(e) => {
-                  handleClauseChange(clause._id?.toString() ?? '', e.currentTarget.textContent || '');
-                  if (e.relatedTarget !== e.currentTarget.nextElementSibling) {
-                    e.currentTarget.nextElementSibling?.classList.add('d-none');
-                  }
-                }}
-                ref={index === clauses.length - 1 ? inputRef : undefined}
-                // dangerouslySetInnerHTML={{ __html: clause.content }}
-                >{clause.content || ''}</div>
-                <button type="button" className="btn btn-danger rounded-pill btn-sm round-button shadow-lg d-none" 
-                onClick={() => removeClause(clause._id?.toString() ?? '')}>X</button>
-            </div> 
-            ))} 
-        </div>
-      </div>
-
-      <div className='form-group mt-3'>
-        {parties.map((party, index) => (
-          <div key={index} className="input-group mb-2">
-            <span className="input-group-text" id="basic-addon1">Party</span>
-            <input
-              className="form-control"
-              type="email"
-              value={party}
-              onChange={(e) => handlePartyChange(index, e.target.value)}
-              placeholder="Enter party email"
-            />
-            <button type="button" className="btn btn-outline-secondary" onClick={() => removeParty(index, party)}>
-              Remove
-            </button>
+          <div className="card-body">
+            {clauses.map((clause, index) => (
+              <div key={clause._id as React.Key || uuidv4()} className='clause-content-wrapper mb-3'
+              onKeyDown={keyDown}>
+                <div contentEditable={true} className='clause-content bg-light position-relative'
+                  onFocus={(e) => e.currentTarget.nextElementSibling?.classList.remove('d-none')}
+                  onBlur={(e) => {
+                    handleClauseChange(clause._id?.toString() ?? '', e.currentTarget.textContent || '');
+                    if (e.relatedTarget !== e.currentTarget.nextElementSibling) {
+                      e.currentTarget.nextElementSibling?.classList.add('d-none');
+                    }
+                  }}
+                  ref={index === clauses.length - 1 ? inputRef : undefined}
+                  // dangerouslySetInnerHTML={{ __html: clause.content }}
+                  >{clause.content || ''}</div>
+                  <button type="button" className="btn btn-light rounded-pill btn-sm round-button shadow-lg d-none" 
+                  onClick={() => removeClause(clause._id?.toString() ?? '')}>X</button>
+              </div> 
+              ))}
+              
+              <button type="button" className="btn btn-secondary btn-sm" onClick={addClause}>+</button> 
           </div>
-        ))}
-      </div>
-
-      <div className='d-flex justify-content-end'>
-          <Link href="#">
-            <button type="button" className="btn btn-outline-primary btn-sm" onClick={addParty}>Add Party</button>
-          </Link>            
         </div>
         <button type="submit" className='btn btn-sm btn-outline-primary mt-3'>Save New Contract</button>
+      </div>
+      <div className='col-md-3'>
+        <div className='card'>
+          <div className='card-body'>
+            <div className='form-group'>
+              <div className="input-group mb-3">
+                <span className="input-group-text" id="basic-addon1">Status</span>
+                <input
+                  className="form-control"
+                  type="text"
+                  value={contractStatus}
+                  readOnly disabled
+                />
+              </div>
+            </div>
+
+
+        <div className='form-group'>
+          <div className="input-group mb-3">
+            <span className="input-group-text" id="basic-addon1">Owner</span>
+            <input
+              className="form-control"
+              type="text"
+              value={session?.user?.email || ''}
+              readOnly disabled
+            />
+          </div>
+        </div>
+
+            <div className='card'>
+              <div className='card-header'>
+                <div className="d-flex justify-content-between align-items-center">
+                  <div>Parties</div>
+                  <button type="button" className="btn btn-outline-primary btn-sm" onClick={addParty}>+</button>
+                </div>
+              </div>
+              <div className='card-body'>
+                <div className='form-group'>
+                  {parties.map((party, index) => (
+                    <div key={index} className="input-group mb-2">
+            <input
+              className="form-control"
+                  type="email"
+                  value={party}
+                  onChange={(e) => handlePartyChange(index, e.target.value)}
+                  placeholder="Enter party email"
+            />
+            <button type="button" className="btn btn-outline-danger" onClick={() => removeParty(index, party)}>
+              X
+            </button>
+          </div>
+                  ))}
+                </div>
+              </div> 
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+    </div>
     </form>
+   
     </>
   )
 }

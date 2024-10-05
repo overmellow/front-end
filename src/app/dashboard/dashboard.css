@@ -145,7 +145,7 @@
   right: -10px;
   width: 30px;
   height: 30px;
-  background-color: #ff5e5e;
+  /* background-color: #ff5e5e; */
   color: white;
   border: none;
   border-radius: 50%;
@@ -166,4 +166,8 @@
   border: 2px solid #cac9c9;
   transition: all 0.3s ease;
   min-height: 80px;
+}
+
+.title:focus {
+  outline: none;
 }

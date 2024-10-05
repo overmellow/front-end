@@ -52,6 +52,11 @@ export default function DashboardLayout({ children,}: {children: React.ReactNode
                     Contracts
                     </Link>
                 </li>
+                <li className="nav-item">
+                    <Link className="nav-link d-flex align-items-center gap-2" href="/dashboard/contracts/add">
+                    Add Contract
+                    </Link>
+                </li>
               </ul>
 
               <hr className="my-3" />

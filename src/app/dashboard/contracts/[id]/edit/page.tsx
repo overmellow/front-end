@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { useSession } from 'next-auth/react'
 import { withAuth } from '@/app/components/withAuth'
 import Link from 'next/link'
 import { v4 as uuidv4 } from 'uuid';
@@ -17,17 +16,16 @@ function EditContractPage() {
   const [title, setTitle] = useState('')
   const [owner, setOwner] = useState<UserI | null>(null)
   const [parties, setParties] = useState<PartyI[]>([]);
-  const [isLoading, setIsLoading] = useState(true)
   const [clauses, setClauses] = useState<Array<ClauseI>>([])
   const router = useRouter()
   const [contractStatus, setContractStatus] = useState<ContractStatusEnum>();
   const params = useParams()
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const inputRef = useAutoFocus();
+  const [createdAt, setCreatedAt] = useState<string | null>(null)
 
   useEffect(() => {
     async function fetchContracts() {
-      setIsLoading(true)
       try {
         let res = await fetch(`/api/contracts/${params.id}`)
         let data = await res.json()
@@ -36,10 +34,9 @@ function EditContractPage() {
         setOwner(data.owner)
         setParties(data.parties.length > 0 ? data.parties : ['']) // Ensure there's always at least one empty string
         setClauses(data.clauses || []) // Add this line
+        setCreatedAt(data.createdAt)
       } catch (error) {
         console.error('Error fetching contract:', error)
-      } finally {
-        setIsLoading(false) // Add this line
       }
     }
     fetchContracts()
@@ -138,41 +135,26 @@ function EditContractPage() {
           </Link>
         </div>
     </div>
+
     <form onSubmit={handleSubmit}>
-      <div className='input-group mt-3'>
-      <span className="input-group-text" id="basic-addon1">Title</span>
-        <input
-          className="form-control"
-          type="text"
-          id="title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-        />
-      </div>
-
-      <div className='form-group mt-3'>
-        <div className="input-group mb-2">
-          <span className="input-group-text" id="basic-addon1">Status</span>
-          <input
-            className="form-control"
-            type="text"
-            value={contractStatus}
-            readOnly disabled
-          />
-        </div>
-      </div>  
-
-    <div className="card mt-3">
-    <div className='card-header'>
-          <div className="d-flex justify-content-between align-items-center">
-            <div>Clauses</div>
-            <button type="button" className="btn btn-outline-primary btn-sm" onClick={addClause}>+</button>
+    <div className='row'>
+      <div className='col-md-9'>
+        <div className='card'>
+          <div className='card-header'>
+            <div className='input-group'>
+                <input
+                  className="form-control no-outline title"
+                  type="text"
+                  id="title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  required
+                />
+              </div>
           </div>
-        </div>
-        <div className="card-body">
-          {clauses.map((clause: ClauseI, index: number) => (            
-            <div key={clause._id as React.Key} className='clause-content-wrapper mb-3'>
+          <div className='card-body'>
+            {clauses.map((clause: ClauseI, index: number) => (            
+              <div key={clause._id as React.Key} className='clause-content-wrapper mb-3'>
                 <div contentEditable={true} className='clause-content bg-light position-relative'
                 onFocus={(e) => e.currentTarget.nextElementSibling?.classList.remove('d-none')}
                 onBlur={(e) => {
@@ -185,73 +167,110 @@ function EditContractPage() {
                 ref={index === clauses.length - 1 ? inputRef : undefined}
                 onKeyDown={keyDown}
                 >{clause.content || ''}</div>
-                <button type="button" className="btn btn-danger rounded-pill btn-sm round-button shadow-lg d-none" 
+                <button type="button" className="btn btn-secondary rounded-pill btn-sm round-button shadow-lg d-none" 
                 onClick={() => removeClause(clause._id?.toString() ?? '')}>X</button>
+              </div>
+            ))}
+                <button type="button" className="btn btn-light btn-sm" onClick={addClause}>+</button>
             </div>
-          ))}
+          </div>
+          <button type="submit" className='btn btn-sm btn-outline-primary mt-3'>Save Edited Contract</button>
         </div>
-      </div>
 
-      <div className='form-group mt-3'>
-        <div className="input-group mb-2">
-          <span className="input-group-text" id="basic-addon1">Owner</span>
+    <div className='col-md-3'>
+    <div className='card'>
+      <div className='card-body'>
+      <div className='form-group'>
+        <div className="input-group mb-3">
+          <span className="input-group-text" id="basic-addon1">Status</span>
           <input
             className="form-control"
             type="text"
-            value={owner?.email || ''}
+            value={contractStatus}
             readOnly disabled
           />
         </div>
       </div>
 
-        <div className='form-group mt-3'>
-          {parties.map((party: { email: string }, index: number) => (
-            <div key={index} className="input-group mb-2">
-              <span className="input-group-text" id="basic-addon1">Party</span>
-              <input
-                className="form-control"
-                type="text"
-                value={party.email}
-                onChange={(e) => handlePartyChange(index, e.target.value)}
-                placeholder="Enter party email"
-              />
-              <button type="button" className="btn btn-outline-secondary" onClick={() => removeParty(index)}>
-                Remove
-              </button>
-            </div>
-          ))}
-          <div className='d-flex justify-content-end'>
-            <Link href="#">
-              <button type="button" className="btn btn-outline-primary btn-sm" onClick={addParty}>Add Party</button>
-            </Link>            
+        <div className='form-group'>
+          <div className="input-group mb-3">
+            <span className="input-group-text" id="basic-addon1">Owner</span>
+            <input
+              className="form-control"
+              type="text"
+              value={owner?.email || ''}
+              readOnly disabled
+            />
           </div>
-          <button type="submit" className='btn btn-sm btn-outline-primary mt-3'>Save Edited Contract</button>
         </div>
-        
-      </form>
 
-      {showDeleteModal && (
-          <div className="modal" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}>
-            <div className="modal-dialog">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title">Confirm Delete</h5>
-                  <button type="button" className="close" onClick={() => setShowDeleteModal(false)}>
-                    <span>&times;</span>
+        <div className='form-group'>
+          <div className="input-group mb-3">
+            <span className="input-group-text" id="basic-addon1">Created At</span>
+            <input
+              className="form-control"
+              type="text"
+              value={createdAt || ''}
+              readOnly disabled
+            />
+          </div>
+        </div>
+
+        <div className='card'>
+          <div className='card-header'>
+            <div className="d-flex justify-content-between align-items-center">
+              <div>Parties</div>
+              <button type="button" className="btn btn-outline-primary btn-sm" onClick={addParty}>+</button>
+            </div>
+          </div>
+          <div className='card-body'>
+            <div className='form-group'>
+              {parties.map((party: { email: string }, index: number) => (
+                <div key={index} className="input-group mb-2">
+                  <input
+                    className="form-control"
+                    type="text"
+                    value={party.email}
+                    onChange={(e) => handlePartyChange(index, e.target.value)}
+                    placeholder="Enter party email"
+                  />
+                  <button type="button" className="btn btn-outline-danger" onClick={() => removeParty(index)}>
+                    X
                   </button>
                 </div>
-                <div className="modal-body">
-                  Are you sure you want to delete this contract?
-                </div>
-                <div className="modal-footer">
-                  <button type="button" className="btn btn-secondary" onClick={() => setShowDeleteModal(false)}>Cancel</button>
-                  <button type="button" className="btn btn-danger" onClick={handleDelete}>Delete</button>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
-        )}
-    </>
+        </div>
+      </div>
+    </div>
+    </div>
+    </div>
+    
+    </form>
+
+    {showDeleteModal && (
+      <div className="modal" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+        <div className="modal-dialog">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title">Confirm Delete</h5>
+              <button type="button" className="close" onClick={() => setShowDeleteModal(false)}>
+                <span>&times;</span>
+              </button>
+            </div>
+            <div className="modal-body">
+              Are you sure you want to delete this contract?
+            </div>
+            <div className="modal-footer">
+              <button type="button" className="btn btn-secondary" onClick={() => setShowDeleteModal(false)}>Cancel</button>
+              <button type="button" className="btn btn-danger" onClick={handleDelete}>Delete</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+  </>
   )
 }
 
