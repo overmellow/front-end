@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { v4 as uuidv4 } from 'uuid';
 import ContractStatusEnum from '@/app/schemas/ContractStatusEnum'
 import { ClauseI } from '@/app/interfaces/ClauseI'
+import useAutoFocus from '@/app/components/useAutoFocus'
 
 function AddContractPage() {
   const [title, setTitle] = useState('')
@@ -16,6 +17,8 @@ function AddContractPage() {
   const router = useRouter()
   const { data: session } = useSession()
   const [contractStatus, setContractStatus] = useState<ContractStatusEnum>();
+
+  const inputRef = useAutoFocus();
 
   useEffect(() => {
     setContractStatus(ContractStatusEnum.DRAFT)
@@ -69,17 +72,25 @@ function AddContractPage() {
 
   const addClause = () => {
     setClauses([...clauses, { _id: uuidv4(), content: '' }])
+    console.log(clauses)
   }
 
   const removeClause = (_id: string) => {
     setClauses(clauses.filter(clause => clause._id !== _id))
   }
 
-  const handleClauseChange = (_id: string, field: 'content', value: string) => {
+  const handleClauseChange = (_id: string, value: string) => {
     setClauses(clauses.map(clause => 
-      clause._id === _id ? { ...clause, [field]: value } : clause
+      clause._id === _id ? { ...clause, content: value } : clause
     ))
   }
+
+  const keyDown = (event: React.KeyboardEvent) => {
+    if (event.shiftKey && event.key === 'Enter') {
+        event.preventDefault();
+        addClause();
+    }
+  };
 
   return (
     <>
@@ -119,30 +130,31 @@ function AddContractPage() {
       </div>  
 
       <div className="card">
-        <div className="card-header">
-        Clauses
+        <div className='card-header'>
+          <div className="d-flex justify-content-between align-items-center">
+            <div>Clauses</div>
+            <button type="button" className="btn btn-outline-primary btn-sm" onClick={addClause}>+</button>
+          </div>
         </div>
-        <ul className="list-group list-group-flush">
-          {clauses.map((clause) => (
-            <li className="list-group-item" key={clause._id as React.Key || uuidv4()}>
-              <div className="input-group ">
-                <textarea 
-                  className="form-control" 
-                  value={clause.content} 
-                  onChange={(e) => handleClauseChange(clause._id?.toString() ?? '', 'content', e.target.value)} 
-                  placeholder="Clause" 
-                  rows={3}
-                  >
-                </textarea>
-                <span className="input-group-text">
-                  <button type="button" className="btn btn-outline-danger btn-sm" onClick={() => removeClause(clause._id?.toString() ?? '')}>X</button>
-                </span>
-              </div>
-            </li>  
-            ))}
-          </ul>
-        <div className="card-footer d-flex justify-content-end">
-          <button type="button" className="btn btn-outline-primary btn-sm" onClick={addClause}>Add Clause</button>
+        <div className="card-body">
+          {clauses.map((clause, index) => (
+            <div key={clause._id as React.Key || uuidv4()} className='clause-content-wrapper mb-3'
+            onKeyDown={keyDown}>
+              <div contentEditable={true} className='clause-content bg-light position-relative'
+                onFocus={(e) => e.currentTarget.nextElementSibling?.classList.remove('d-none')}
+                onBlur={(e) => {
+                  handleClauseChange(clause._id?.toString() ?? '', e.currentTarget.textContent || '');
+                  if (e.relatedTarget !== e.currentTarget.nextElementSibling) {
+                    e.currentTarget.nextElementSibling?.classList.add('d-none');
+                  }
+                }}
+                ref={index === clauses.length - 1 ? inputRef : undefined}
+                // dangerouslySetInnerHTML={{ __html: clause.content }}
+                >{clause.content || ''}</div>
+                <button type="button" className="btn btn-danger rounded-pill btn-sm round-button shadow-lg d-none" 
+                onClick={() => removeClause(clause._id?.toString() ?? '')}>X</button>
+            </div> 
+            ))} 
         </div>
       </div>
 

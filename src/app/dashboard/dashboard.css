@@ -123,3 +123,47 @@
   .bd-mode-toggle .dropdown-menu .active .bi {
     display: block !important;
   }
+
+  /* .clause-content {
+    min-height: 40px;
+    height: auto;
+  } */
+
+  .clause-content-wrapper {
+  position: relative; /* Needed for positioning the button relative to this div */
+
+}
+
+.clause-content {
+  /* min-height: 80px; */
+  padding: 10px;
+}
+
+.round-button {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 30px;
+  height: 30px;
+  background-color: #ff5e5e;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.round-button:hover {
+  background-color: #ff4b4b;
+}
+
+.clause-content:focus {
+  outline: none;
+  box-shadow: 0 0 10px #cac9c9;
+  border: 2px solid #cac9c9;
+  transition: all 0.3s ease;
+  min-height: 80px;
+}

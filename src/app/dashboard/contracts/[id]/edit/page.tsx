@@ -11,6 +11,7 @@ import { ClauseI } from '@/app/interfaces/ClauseI'
 import { PartyI } from '@/app/interfaces/PartyI'
 import { UserI } from '@/app/interfaces/UserI'
 import ContractStatusEnum from '@/app/schemas/ContractStatusEnum'
+import useAutoFocus from '@/app/components/useAutoFocus'
 
 function EditContractPage() {
   const [title, setTitle] = useState('')
@@ -22,6 +23,7 @@ function EditContractPage() {
   const [contractStatus, setContractStatus] = useState<ContractStatusEnum>();
   const params = useParams()
   const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const inputRef = useAutoFocus();
 
   useEffect(() => {
     async function fetchContracts() {
@@ -110,11 +112,18 @@ function EditContractPage() {
     setClauses(clauses.filter(clause => clause._id !== id))
   }
 
-  const handleClauseChange = (id: string, field: 'content', value: string) => {
+  const handleClauseChange = (id: string, value: string) => {
     setClauses(clauses.map(clause => 
-      clause._id === id ? { ...clause, [field]: value } : clause
+      clause._id === id ? { ...clause, content: value } : clause
     ))
   }
+
+  const keyDown = (event: React.KeyboardEvent) => {
+    if (event.shiftKey && event.key === 'Enter') {
+        event.preventDefault();
+        addClause();
+    }
+  };
 
   return (
     <>
@@ -155,28 +164,31 @@ function EditContractPage() {
       </div>  
 
     <div className="card mt-3">
-        <div className="card-header">Clauses</div>
-        <ul className="list-group list-group-flush">
-          {clauses.map((clause: ClauseI) => (            
-            <li className="list-group-item" key={clause._id as React.Key}>
-              <div className="input-group ">
-                <textarea 
-                  className="form-control" 
-                  value={clause.content} 
-                  onChange={(e) => handleClauseChange(clause._id?.toString() ?? '', 'content', e.target.value)} 
-                  placeholder="Clause" 
-                  rows={3}
-                  >
-                </textarea>
-                <span className="input-group-text">
-                  <button type="button" className="btn btn-outline-danger btn-sm" onClick={() => removeClause(clause._id?.toString() ?? '')}>X</button>
-                </span>
-              </div>
-            </li>
-        ))}
-        </ul>
-        <div className="card-footer d-flex justify-content-end">
-          <button type="button" className="btn btn-outline-primary btn-sm" onClick={addClause}>Add Clause</button>
+    <div className='card-header'>
+          <div className="d-flex justify-content-between align-items-center">
+            <div>Clauses</div>
+            <button type="button" className="btn btn-outline-primary btn-sm" onClick={addClause}>+</button>
+          </div>
+        </div>
+        <div className="card-body">
+          {clauses.map((clause: ClauseI, index: number) => (            
+            <div key={clause._id as React.Key} className='clause-content-wrapper mb-3'>
+                <div contentEditable={true} className='clause-content bg-light position-relative'
+                onFocus={(e) => e.currentTarget.nextElementSibling?.classList.remove('d-none')}
+                onBlur={(e) => {
+                  handleClauseChange(clause._id?.toString() ?? '', e.currentTarget.textContent || '');
+                  if (e.relatedTarget !== e.currentTarget.nextElementSibling) {
+                    e.currentTarget.nextElementSibling?.classList.add('d-none');
+                  }
+                }}
+                // dangerouslySetInnerHTML={{ __html: clause.content }}
+                ref={index === clauses.length - 1 ? inputRef : undefined}
+                onKeyDown={keyDown}
+                >{clause.content || ''}</div>
+                <button type="button" className="btn btn-danger rounded-pill btn-sm round-button shadow-lg d-none" 
+                onClick={() => removeClause(clause._id?.toString() ?? '')}>X</button>
+            </div>
+          ))}
         </div>
       </div>
 
