@@ -36,9 +36,12 @@ function ContractsPage() {
           <p>id: {contract._id?.toString()}</p>
           <p>title: {contract.title}</p>
           <p>status: {contract.status}</p>
+          <div>Clauses</div>
+          <ol>
           {contract.clauses?.map((c: any) => 
-            <p key={c._id}>clauses: {c.content}</p>
+            <li key={c._id}>{c.content}</li>
           )}
+          </ol>
           <hr />
           <p>owner: {(contract.owner as any).name ?? contract.owner}</p>    
           {contract.parties.map((p: any) => 

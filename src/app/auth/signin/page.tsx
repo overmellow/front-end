@@ -25,7 +25,7 @@ export default function SignIn() {
     if (result?.error) {
       setError('Invalid email or password')
     } else if (result?.ok) {
-      router.push('/dashboard/contracts/add')
+      router.push('/dashboard/contracts')
     }
   }
 

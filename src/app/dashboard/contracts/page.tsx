@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 
-import Contract from '@/app/components/Contract'
 import { withAuth } from '@/app/components/withAuth'
 import { ContractI } from '@/app/interfaces/ContractI'
 
@@ -37,15 +36,26 @@ function ContractsPage() {
         </div>
       </div>
 
-      <div className="list-group list-group-flush">
+      <table className="table">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Title</th>
+            <th scope="col">Status</th>
+            <th scope="col">Created At</th>
+          </tr>
+        </thead>
+        <tbody>
         {(contracts as ContractI[]).map((contract: ContractI) => (
-        <div key={contract._id?.toString()} className="list-group-item">
-            <Link href={`/dashboard/contracts/${contract._id?.toString()}`}>
-              <Contract contract={contract} />
-            </Link>
-          </div>
-        ))}
-      </div>
+            <tr key={contract._id?.toString()}>
+              <th scope="row">{contract._id?.toString()}</th>
+              <td><Link href={`/dashboard/contracts/${contract._id?.toString()}`}>{contract.title}</Link></td>
+              <td>{contract.status}</td>
+              <td>{contract.createdAt?.toString()}</td>  
+            </tr>
+            ))}
+          </tbody>
+      </table>
     </>
   )
 }
