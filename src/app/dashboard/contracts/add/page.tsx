@@ -7,13 +7,13 @@ import { withAuth } from '@/app/components/withAuth'
 import Link from 'next/link'
 import { v4 as uuidv4 } from 'uuid';
 import ContractStatusEnum from '@/app/schemas/ContractStatusEnum'
-import { ClauseI } from '@/app/interfaces/ClauseI'
+import { IClause } from '@/app/schemas/Clause'
 import useAutoFocus from '@/app/components/useAutoFocus'
 
 function AddContractPage() {
   const [title, setTitle] = useState('')
   const [parties, setParties] = useState([''])
-  const [clauses, setClauses] = useState<Array<ClauseI>>([{ _id: uuidv4(), content: '' }])
+  const [clauses, setClauses] = useState<Array<IClause>>([{ _id: uuidv4(), content: '' }])
   const router = useRouter()
   const { data: session } = useSession()
   const [contractStatus, setContractStatus] = useState<ContractStatusEnum>();
@@ -98,7 +98,7 @@ function AddContractPage() {
       <h1 className="h2">New Contract</h1>
       <div className="btn-toolbar mb-2 mb-md-0">
         <Link href={`/dashboard/contracts`} className='me-2'>
-          <button className="btn btn-outline-secondary mb-3 btn-sm">Cancel</button>
+          <button className="btn btn-outline-dark mb-3 btn-sm">Cancel</button>
         </Link>
       </div>
     </div>
@@ -121,8 +121,7 @@ function AddContractPage() {
           </div>
           <div className="card-body">
             {clauses.map((clause, index) => (
-              <div key={clause._id as React.Key || uuidv4()} className='clause-content-wrapper mb-3'
-              onKeyDown={keyDown}>
+              <div key={clause._id as React.Key || uuidv4()} className='clause-content-wrapper mb-3'>
                 <div contentEditable={true} className='clause-content bg-light position-relative'
                   onFocus={(e) => e.currentTarget.nextElementSibling?.classList.remove('d-none')}
                   onBlur={(e) => {
@@ -132,6 +131,7 @@ function AddContractPage() {
                     }
                   }}
                   ref={index === clauses.length - 1 ? inputRef : undefined}
+                  onKeyDown={keyDown}
                   // dangerouslySetInnerHTML={{ __html: clause.content }}
                   >{clause.content || ''}</div>
                   <button type="button" className="btn btn-light rounded-pill btn-sm round-button shadow-lg d-none" 
@@ -139,7 +139,7 @@ function AddContractPage() {
               </div> 
               ))}
               
-              <button type="button" className="btn btn-secondary btn-sm" onClick={addClause}>+</button> 
+              <button type="button" className="btn btn-light btn-sm" onClick={addClause}>+</button> 
           </div>
         </div>
         <button type="submit" className='btn btn-sm btn-outline-primary mt-3'>Save New Contract</button>

@@ -6,17 +6,17 @@ import { withAuth } from '@/app/components/withAuth'
 import Link from 'next/link'
 import { v4 as uuidv4 } from 'uuid';
 
-import { ClauseI } from '@/app/interfaces/ClauseI'
-import { PartyI } from '@/app/interfaces/PartyI'
-import { UserI } from '@/app/interfaces/UserI'
+import { IClause } from '@/app/schemas/Clause'
+import { IParty } from '@/app/schemas/User'
+import { IUser } from '@/app/schemas/User'
 import ContractStatusEnum from '@/app/schemas/ContractStatusEnum'
 import useAutoFocus from '@/app/components/useAutoFocus'
 
 function EditContractPage() {
   const [title, setTitle] = useState('')
-  const [owner, setOwner] = useState<UserI | null>(null)
-  const [parties, setParties] = useState<PartyI[]>([]);
-  const [clauses, setClauses] = useState<Array<ClauseI>>([])
+  const [owner, setOwner] = useState<IUser | null>(null)
+  const [parties, setParties] = useState<IParty[]>([]);
+  const [clauses, setClauses] = useState<Array<IClause>>([])
   const router = useRouter()
   const [contractStatus, setContractStatus] = useState<ContractStatusEnum>();
   const params = useParams()
@@ -153,7 +153,7 @@ function EditContractPage() {
               </div>
           </div>
           <div className='card-body'>
-            {clauses.map((clause: ClauseI, index: number) => (            
+            {clauses.map((clause: IClause, index: number) => (            
               <div key={clause._id as React.Key} className='clause-content-wrapper mb-3'>
                 <div contentEditable={true} className='clause-content bg-light position-relative'
                 onFocus={(e) => e.currentTarget.nextElementSibling?.classList.remove('d-none')}
@@ -167,7 +167,7 @@ function EditContractPage() {
                 ref={index === clauses.length - 1 ? inputRef : undefined}
                 onKeyDown={keyDown}
                 >{clause.content || ''}</div>
-                <button type="button" className="btn btn-secondary rounded-pill btn-sm round-button shadow-lg d-none" 
+                <button type="button" className="btn btn-light rounded-pill btn-sm round-button shadow-lg d-none" 
                 onClick={() => removeClause(clause._id?.toString() ?? '')}>X</button>
               </div>
             ))}

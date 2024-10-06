@@ -4,10 +4,10 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { withAuth } from '@/app/components/withAuth'
 import { useParams } from 'next/navigation'
-import { ContractI } from '@/app/interfaces/ContractI'
+import { IContract } from '@/app/schemas/Contract'    
 
 function ContractsPage() {  
-  const [contract, setContract] = useState<ContractI | null>(null)
+  const [contract, setContract] = useState<IContract | null>(null)
   const params = useParams()
  
   useEffect(() => {

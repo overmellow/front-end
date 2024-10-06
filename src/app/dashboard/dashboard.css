@@ -146,8 +146,6 @@
   width: 30px;
   height: 30px;
   /* background-color: #ff5e5e; */
-  color: white;
-  border: none;
   border-radius: 50%;
   cursor: pointer;
   font-size: 16px;
@@ -158,11 +156,13 @@
 
 .round-button:hover {
   background-color: #ff4b4b;
+  border: 1px solid #ff4b4b;
+  color: white;
 }
 
 .clause-content:focus {
   outline: none;
-  box-shadow: 0 0 10px #cac9c9;
+  box-shadow: 0 0 5px #cac9c9;
   border: 2px solid #cac9c9;
   transition: all 0.3s ease;
   min-height: 80px;

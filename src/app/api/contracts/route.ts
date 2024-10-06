@@ -3,7 +3,7 @@ import dbConnect from '@/lib/dbConnect'
 import Contract from '@/app/schemas/Contract'
 import User from '@/app/schemas/User'
 import Clause from '@/app/schemas/Clause'
-import { ClauseI } from '@/app/interfaces/ClauseI'
+import { IClause } from '@/app/schemas/Clause'
 
 export async function GET(request: NextRequest) {
 	return handleGetRequest(request).catch((error) => {
@@ -35,7 +35,7 @@ async function handlePostRequest(request: NextRequest) {
 	console.log('status:', status)
 	console.log('userEmail:', userEmail)
 	console.log('partyEmails:', partyEmails)
-	const newClauses = await Promise.all(clauses.map(async (clause: ClauseI) => {
+	const newClauses = await Promise.all(clauses.map(async (clause: IClause) => {
 		const { _id, ...clauseData } = clause;
 		const newClause = new Clause(clauseData);
 		await newClause.save();

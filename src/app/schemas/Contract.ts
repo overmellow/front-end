@@ -1,5 +1,19 @@
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import ContractStatusEnum from "./ContractStatusEnum";
+
+export interface IContract {
+  _id?: Types.ObjectId;
+  title: string;
+  owner: Types.ObjectId | string;
+  parties: Types.ObjectId[] | string[];
+  clauses: {
+    _id?: Types.ObjectId;
+    content: string;
+  }[];
+  status: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
 
 const contractSchema = new mongoose.Schema({
   title: { type: String },

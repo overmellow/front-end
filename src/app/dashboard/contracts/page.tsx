@@ -5,8 +5,7 @@ import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 
 import { withAuth } from '@/app/components/withAuth'
-import { ContractI } from '@/app/interfaces/ContractI'
-
+import { IContract } from '@/app/schemas/Contract'
 
 function ContractsPage() {  
   const [contracts, setContracts] = useState(null)
@@ -46,7 +45,7 @@ function ContractsPage() {
           </tr>
         </thead>
         <tbody>
-        {(contracts as ContractI[]).map((contract: ContractI) => (
+        {(contracts as IContract[]).map((contract: IContract) => (
             <tr key={contract._id?.toString()}>
               <th scope="row">{contract._id?.toString()}</th>
               <td><Link href={`/dashboard/contracts/${contract._id?.toString()}`}>{contract.title}</Link></td>
