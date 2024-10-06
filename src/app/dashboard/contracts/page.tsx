@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 
+import { fetchContracts } from '@/app/services/contracts'
 import { withAuth } from '@/app/components/withAuth'
 import { IContract } from '@/app/schemas/Contract'
 
@@ -12,15 +13,16 @@ function ContractsPage() {
   const { data: session } = useSession()
  
   useEffect(() => {
-    async function fetchContracts() {
-      let res = await fetch('/api/contracts', { 
-        headers: { 'user-id': session?.user?.id  || '' } 
-      })
-      let data = await res.json()
-      setContracts(data)
+    async function getContracts() {
+      try {
+        const data = await fetchContracts(session?.user?.id || null);
+        setContracts(data)
+      } catch (error) {
+        console.error('Error fetching contracts:', error)
+      }
     }
-    fetchContracts()
-  }, [])
+    getContracts()
+  }, [session?.user?.id])
 
   if (!contracts) return <div>Loading...</div>
 

@@ -5,19 +5,23 @@ import { useEffect, useState } from 'react'
 import { withAuth } from '@/app/components/withAuth'
 import { useParams } from 'next/navigation'
 import { IContract } from '@/app/schemas/Contract'    
+import { fetchContract } from '@/app/services/contracts'
 
 function ContractsPage() {  
   const [contract, setContract] = useState<IContract | null>(null)
   const params = useParams()
  
   useEffect(() => {
-    async function fetchContracts() {
-      let res = await fetch(`/api/contracts/${params.id}`)
-      let data = await res.json()
-      setContract(data)
+    async function getContract() {
+      try {
+        const data = await fetchContract(params.id as string | null);
+        setContract(data)
+      } catch (error) {
+        console.error('Error fetching contract:', error)
+      }
     }
-    fetchContracts()
-  }, [])
+    getContract()
+  }, [params.id])
 
   if (!contract) return <div>Loading...</div>
 

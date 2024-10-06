@@ -1,3 +1,11 @@
+export async function fetchContracts(id: string | null) {
+    const res = await fetch(`/api/contracts`, {
+        headers: { 'user-id': id || '' }
+    });
+    if (!res.ok) throw new Error('Failed to fetch contracts');
+    return res.json();
+  }
+
 export async function fetchContract(id: string | null) {
     const res = await fetch(`/api/contracts/${id}`);
     if (!res.ok) throw new Error('Failed to fetch contract');
@@ -25,4 +33,4 @@ export async function createContract(data: any) {
         body: JSON.stringify(data),
     });
     if (!response.ok) throw new Error('Failed to create contract');
-}   
+} 
