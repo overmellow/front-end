@@ -14,7 +14,7 @@ function ContractsPage() {
   useEffect(() => {
     async function fetchContracts() {
       let res = await fetch('/api/contracts', { 
-        headers: { 'user-id': session?.user?.id || '' } 
+        headers: { 'user-id': session?.user?.id  || '' } 
       })
       let data = await res.json()
       setContracts(data)
@@ -48,7 +48,7 @@ function ContractsPage() {
         {(contracts as IContract[]).map((contract: IContract) => (
             <tr key={contract._id?.toString()}>
               <th scope="row">{contract._id?.toString()}</th>
-              <td><Link href={`/dashboard/contracts/${contract._id?.toString()}`}>{contract.title}</Link></td>
+              <td><Link href={`/dashboard/contracts/${contract._id?.toString()}/edit`}>{contract.title}</Link></td>
               <td>{contract.status}</td>
               <td>{contract.createdAt?.toString()}</td>  
             </tr>

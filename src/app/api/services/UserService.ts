@@ -1,7 +1,7 @@
-import { User } from '../schemas/User';
+import User from '@/app/schemas/User';
 
 // Create a new user
-const createUser = async (userData) => {
+const createUser = async (userData: any) => {
   const user = new User(userData);
   return await user.save();
 };
@@ -12,17 +12,17 @@ const getAllUsers = async () => {
 };
 
 // Get user by ID
-const getUserById = async (id) => {
+const getUserById = async (id: any) => {
   return await User.findById(id);
 };
 
 // Update user
-const updateUser = async (id, updateData) => {
+const updateUser = async (id: any, updateData: any) => {
   return await User.findByIdAndUpdate(id, updateData, { new: true });
 };
 
 // Delete user
-const deleteUser = async (id) => {
+const deleteUser = async (id: any) => {
   return await User.findByIdAndDelete(id);
 };
 

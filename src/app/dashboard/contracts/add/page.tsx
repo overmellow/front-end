@@ -9,6 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 import ContractStatusEnum from '@/app/schemas/ContractStatusEnum'
 import { IClause } from '@/app/schemas/Clause'
 import useAutoFocus from '@/app/components/useAutoFocus'
+import { createContract } from '@/app/services/contracts'
 
 function AddContractPage() {
   const [title, setTitle] = useState('')
@@ -29,26 +30,15 @@ function AddContractPage() {
     e.preventDefault()
 
     try {
-      const response = await fetch('/api/contracts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          title: title,
-          clauses: clauses,
-          status: ContractStatusEnum.DRAFT,
-          userEmail: await session?.user?.email,
-          partyEmails: parties.filter(party => party.trim() !== '')
-        }),
-      })
-
-      if (response.ok) {
-        router.push('/dashboard/contracts')
-        // router.refresh()
-      } else {
-        console.error('Failed to add contract')
-      }
+      await createContract({
+        title: title,
+        clauses: clauses,
+        status: ContractStatusEnum.DRAFT,
+        userEmail: await session?.user?.email,
+        partyEmails: parties.filter(party => party.trim() !== '')
+      });
+      router.push('/dashboard/contracts')
+      // router.refresh()
     } catch (error) {
       console.error('Error adding contract:', error)
     }
@@ -158,20 +148,17 @@ function AddContractPage() {
                 />
               </div>
             </div>
-
-
-        <div className='form-group'>
-          <div className="input-group mb-3">
-            <span className="input-group-text" id="basic-addon1">Owner</span>
-            <input
-              className="form-control"
-              type="text"
-              value={session?.user?.email || ''}
-              readOnly disabled
-            />
-          </div>
-        </div>
-
+            <div className='form-group'>
+              <div className="input-group mb-3">
+                <span className="input-group-text" id="basic-addon1">Owner</span>
+                <input
+                  className="form-control"
+                  type="text"
+                  value={session?.user?.email || ''}
+                  readOnly disabled
+                />
+              </div>
+            </div>
             <div className='card'>
               <div className='card-header'>
                 <div className="d-flex justify-content-between align-items-center">
@@ -182,30 +169,26 @@ function AddContractPage() {
               <div className='card-body'>
                 <div className='form-group'>
                   {parties.map((party, index) => (
-                    <div key={index} className="input-group mb-2">
-            <input
-              className="form-control"
-                  type="email"
-                  value={party}
-                  onChange={(e) => handlePartyChange(index, e.target.value)}
-                  placeholder="Enter party email"
-            />
-            <button type="button" className="btn btn-outline-danger" onClick={() => removeParty(index, party)}>
-              X
-            </button>
-          </div>
+                  <div key={index} className="input-group mb-2">
+                  <input
+                    className="form-control"
+                        type="email"
+                        value={party}
+                        onChange={(e) => handlePartyChange(index, e.target.value)}
+                        placeholder="Enter party email"
+                  />
+                  <button type="button" className="btn btn-outline-danger" onClick={() => removeParty(index, party)}>X</button>
+                </div>
                   ))}
                 </div>
               </div> 
-              </div>
-
             </div>
+
           </div>
         </div>
-
+      </div>
     </div>
     </form>
-   
     </>
   )
 }

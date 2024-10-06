@@ -11,6 +11,8 @@ import { IParty } from '@/app/schemas/User'
 import { IUser } from '@/app/schemas/User'
 import ContractStatusEnum from '@/app/schemas/ContractStatusEnum'
 import useAutoFocus from '@/app/components/useAutoFocus'
+import { fetchContract, updateContract, deleteContract } from '@/app/services/contracts'
+import DeleteModal from '@/app/components/DeleteModal'
 
 function EditContractPage() {
   const [title, setTitle] = useState('')
@@ -27,8 +29,7 @@ function EditContractPage() {
   useEffect(() => {
     async function fetchContracts() {
       try {
-        let res = await fetch(`/api/contracts/${params.id}`)
-        let data = await res.json()
+        const data = await fetchContract(params.id);
         setTitle(data.title)
         setContractStatus(data.status)
         setOwner(data.owner)
@@ -44,43 +45,25 @@ function EditContractPage() {
 
   const handleDelete = async () => {
     try {
-      const res = await fetch(`/api/contracts/${params.id}`, {
-        method: 'DELETE',
-      })
-      if (res.ok) {
-        router.push('/dashboard/contracts')
-      } else {
-        console.error('Failed to delete contract')
-      }
+      await deleteContract(params.id);
+      router.push('/dashboard/contracts');
     } catch (error) {
-      console.error('Error deleting contract:', error)
+      console.error('Error deleting contract:', error);
     }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
+    e.preventDefault();
     try {
-      const response = await fetch(`/api/contracts/${params.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          title: title,
-          partyEmails: parties.map((party: { email: string }) => party.email.trim()).filter((email: string) => email !== ''),
-          clauses: clauses,
-        }),
-      })
-
-      if (response.ok) {
-        router.push('/dashboard/contracts')
-        router.refresh()
-      } else {
-        console.error('Failed to add contract')
-      }
+      await updateContract(params.id, {
+        title,
+        partyEmails: parties.map((party: { email: string }) => party.email.trim()).filter((email: string) => email !== ''),
+        clauses,
+      });
+      router.push('/dashboard/contracts');
+      router.refresh();
     } catch (error) {
-      console.error('Error adding contract:', error)
+      console.error('Error updating contract:', error);
     }
   }
 
@@ -250,25 +233,7 @@ function EditContractPage() {
     </form>
 
     {showDeleteModal && (
-      <div className="modal" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}>
-        <div className="modal-dialog">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title">Confirm Delete</h5>
-              <button type="button" className="close" onClick={() => setShowDeleteModal(false)}>
-                <span>&times;</span>
-              </button>
-            </div>
-            <div className="modal-body">
-              Are you sure you want to delete this contract?
-            </div>
-            <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" onClick={() => setShowDeleteModal(false)}>Cancel</button>
-              <button type="button" className="btn btn-danger" onClick={handleDelete}>Delete</button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <DeleteModal onClose={() => setShowDeleteModal(false)} onDelete={handleDelete} />
     )}
   </>
   )
