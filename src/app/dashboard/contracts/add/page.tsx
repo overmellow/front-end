@@ -108,6 +108,14 @@ function AddContractPage() {
           event.currentTarget.innerHTML = clause + box;
           // event.currentTarget.focus();
           setReg('');
+        // Move the cursor to the end of the text after inserting the box
+        const range = document.createRange();
+        const selection = window.getSelection();
+        range.selectNodeContents(event.currentTarget);
+        range.collapse(false);
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+        event.currentTarget.focus();
         }
       }
 
@@ -132,7 +140,7 @@ function AddContractPage() {
     <form onSubmit={handleSubmit}>
     <div className='row'>
       <div className='col-md-9'>
-        <div className="card">
+        <div className="card rounded-0">
           <div className='card-header'>
             <div className='input-group'>
                <input
@@ -147,6 +155,9 @@ function AddContractPage() {
             </div>
           </div>
           <div className="card-body">
+            <div className='form-group'>
+              {currentClauseContent}
+            </div>
             {clauses.map((clause, index) => (
               <div key={clause._id as React.Key || uuidv4()} className='clause-content-wrapper mb-3'>
                 <div contentEditable={true} className='clause-content bg-light position-relative'
@@ -178,54 +189,32 @@ function AddContractPage() {
         <button type="submit" className='btn btn-sm btn-light mt-3'>Save New Contract</button>
       </div>
       <div className='col-md-3'>
-        <div className='card'>
+        <div className='card rounded-0'>
           <div className='card-body'>
-            <div className='form-group'>
-              <div className="input-group mb-3">
-                <span className="input-group-text" id="basic-addon1">status</span>
-                <input
-                  className="form-control"
-                  type="text"
-                  value={contractStatus}
-                  readOnly disabled
-                />
-              </div>
+            <div className='row'>              
+              <span className="badge text-bg-secondary col-md-11 mx-3 mb-2 rounded-0">{session?.user?.email}</span>
+              <span className="badge text-bg-info col-md-4 mx-3 mb-2 rounded-0">{contractStatus}</span> 
             </div>
-            <div className='form-group'>
-              <div className="input-group mb-3">
-                <span className="input-group-text" id="basic-addon1">owner</span>
-                <input
-                  className="form-control"
-                  type="text"
-                  value={session?.user?.email || ''}
-                  readOnly disabled
-                />
-              </div>
-            </div>
-            <div className='card'>
-              <div className='card-body'>
-                {/* <h5 className="card-title">Parties</h5> */}
-                <h6 className="card-subtitle mb-2 text-body-secondary mb-3">parties</h6>  
-                <div className='form-group'>
-                  {parties.map((party, index) => (
-                  <div key={index} className="input-group mb-2">
-                    <input
-                      className="form-control"
-                          type="email"
-                          value={party}
-                          onChange={(e) => handlePartyChange(index, e.target.value)}
-                          placeholder="Enter party email"
-                    />
-                  <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => removeParty(index, party)}>X</button>
-                  </div>
-                  ))}                  
-                  <a href="#" style={{fontSize: '0.8rem'}} 
-                  className="link-offset-2 link-underline link-underline-opacity-0 link-opacity-75 link-opacity-100-hover link-secondary" 
-                  onClick={addParty}><i>+ add party</i></a> 
+            <hr />
+            <div className='row'>
+              <div className='form-group'>
+                {parties.map((party, index) => (
+                <div key={index} className="input-group mb-2">
+                  <input
+                    className="form-control rounded-0"
+                        type="email"
+                        value={party}
+                        onChange={(e) => handlePartyChange(index, e.target.value)}
+                        placeholder="Enter party email"
+                  />
+                <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => removeParty(index, party)}>X</button>
                 </div>
-              </div> 
-            </div>
-
+                ))}                  
+                <a href="#" style={{fontSize: '0.8rem'}} 
+                className="link-offset-2 link-underline link-underline-opacity-0 link-opacity-75 link-opacity-100-hover link-secondary" 
+                onClick={addParty}><i>+ add party</i></a> 
+              </div>
+            </div>  
           </div>
         </div>
       </div>

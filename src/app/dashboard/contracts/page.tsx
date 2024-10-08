@@ -71,7 +71,7 @@ function ContractsPage() {
             <th scope="row">{contract._id?.toString()}</th>
             <td><Link href={`/dashboard/contracts/${contract._id?.toString()}/edit`}>{contract.title}</Link></td>
             <td>{contract.status}</td>
-            <td>{contract.createdAt?.toString()}</td>  
+            <td>{new Date(contract.createdAt).toLocaleString()}</td>  
           </tr>
           ))}
         </tbody>

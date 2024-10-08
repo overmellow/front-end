@@ -35,7 +35,7 @@ function EditContractPage() {
         setOwner(data.owner)
         setParties(data.parties.length > 0 ? data.parties : ['']) // Ensure there's always at least one empty string
         setClauses(data.clauses || []) // Add this line
-        setCreatedAt(data.createdAt)
+        setCreatedAt(new Date(data.createdAt).toLocaleString())
       } catch (error) {
         console.error('Error fetching contract:', error)
       }
@@ -122,7 +122,7 @@ function EditContractPage() {
     <form onSubmit={handleSubmit}>
     <div className='row'>
       <div className='col-md-9'>
-        <div className='card'>
+        <div className='card rounded-0'>
           <div className='card-header'>
             <div className='input-group'>
                 <input
@@ -131,6 +131,7 @@ function EditContractPage() {
                   id="title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
+                  placeholder='Enter contract title'
                   required
                 />
               </div>
@@ -163,52 +164,20 @@ function EditContractPage() {
         </div>
 
     <div className='col-md-3'>
-    <div className='card'>
+    <div className='card rounded-0'>
       <div className='card-body'>
-      <div className='form-group'>
-        <div className="input-group mb-3">
-          <span className="input-group-text" id="basic-addon1">status</span>
-          <input
-            className="form-control"
-            type="text"
-            value={contractStatus}
-            readOnly disabled
-          />
+        <div className='row mb-4'>
+          <div className="badge text-bg-secondary mb-3 rounded-0 col-md-11 mx-3">{owner?.email}</div>
+          <div className="badge text-bg-info rounded-0 col-md-4 mx-3">{contractStatus}</div>
+          <div className="badge text-bg-light rounded-0 col-md-5 mx-3">{createdAt}</div>
         </div>
-      </div>
-
-        <div className='form-group'>
-          <div className="input-group mb-3">
-            <span className="input-group-text" id="basic-addon1">owner</span>
-            <input
-              className="form-control border-0"
-              type="text"
-              value={owner?.email || ''}
-              readOnly disabled
-            />
-          </div>
-        </div>
-
-        <div className='form-group'>
-          <div className="input-group mb-3">
-            <span className="input-group-text" id="basic-addon1">created at</span>
-            <input
-              className="form-control border-0"
-              type="text"
-              value={createdAt || ''}
-              readOnly disabled
-            />
-          </div>
-        </div>
-
-        <div className='card'>
-          <div className='card-body'>
-          <h6 className="card-subtitle mb-2 text-body-secondary mb-3">parties</h6>  
+        <hr />
+        <div className='row'>
             <div className='form-group'>
               {parties.map((party: { email: string }, index: number) => (
                 <div key={index} className="input-group mb-2">
                   <input
-                    className="form-control shadow-none"
+                    className="form-control shadow-none rounded-0"
                     type="text"
                     value={party.email}
                     onChange={(e) => handlePartyChange(index, e.target.value)}
@@ -226,7 +195,6 @@ function EditContractPage() {
           </div>
         </div>
       </div>
-    </div>
     </div>
     </div>
     
