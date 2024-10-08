@@ -126,7 +126,7 @@ function EditContractPage() {
           <div className='card-header'>
             <div className='input-group'>
                 <input
-                  className="form-control shadow-none title border-0"
+                  className="form-control shadow-none title border-0 rounded-0"
                   type="text"
                   id="title"
                   value={title}
@@ -145,6 +145,9 @@ function EditContractPage() {
                   handleClauseChange(clause._id?.toString() ?? '', e.currentTarget.textContent || '');
                   if (e.relatedTarget !== e.currentTarget.nextElementSibling) {
                     e.currentTarget.nextElementSibling?.classList.add('d-none');
+                  }
+                  if (e.currentTarget.textContent === '') {
+                    removeClause(clause._id?.toString() ?? '')
                   }
                 }}
                 // dangerouslySetInnerHTML={{ __html: clause.content }}

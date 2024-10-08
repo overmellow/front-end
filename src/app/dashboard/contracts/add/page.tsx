@@ -62,9 +62,8 @@ function AddContractPage() {
     setParties(newParties)
   }
 
-  const addClause = () => {
+  const addClause = async () => {
     setClauses([...clauses, { _id: uuidv4(), content: '' }])
-    console.log(clauses)
   }
 
   const removeClause = (_id: string) => {
@@ -77,51 +76,57 @@ function AddContractPage() {
     ))
   }
 
+  const addTextPlaceholder = (clause: string) => {
+    return clause.replace(/\[\[(\w+)\]\]/g, '<box>$1</box>')
+  }
+
   const keyDown = async (event: React.KeyboardEvent<HTMLDivElement | HTMLTextAreaElement>, clause: string) => {
     
     const regex = /\[\[.*?\]\]/;
 
     if (event.currentTarget) {
-      const newReg = reg + event.key;
-      setReg(newReg);      
-      // console.log(event.currentTarget.textContent);
-      setCurrentClauseContent(event.currentTarget.textContent || '');
-      // console.log('Current clause content: ', currentClauseContent);
+      // const newReg = reg + event.key;
+      // setReg(newReg);      
+      // // console.log(event.currentTarget.textContent);
+      // setCurrentClauseContent(event.currentTarget.textContent || '');
+      // // console.log('Current clause content: ', currentClauseContent);
 
-      if (event.key === ' ' && reg[reg.length - 1] !== ']') 
-      {
-        setReg('');
-      } 
-      else if (event.key === 'Backspace') 
-      {
-        setReg(reg.slice(0, -1));
-      }
-      else 
-      {
-        let newReg = reg + event.key;
-        // setReg(newReg);
+      // if (event.key === ' ' && reg[reg.length - 1] !== ']') 
+      // {
+      //   setReg('');
+      // } 
+      // else if (event.key === 'Backspace') 
+      // {
+      //   setReg(reg.slice(0, -1));
+      // }
+      // else 
+      // {
+      //   let newReg = reg + event.key;
+      //   // setReg(newReg);
 
-        // Check if the pattern is found in the text
-        if (regex.test(newReg)) {
-          const idWithoutBrackets = newReg.slice(2, -2);
-          const box = ` <div class='box' contenteditable='false'>${idWithoutBrackets}</div> `;           
-          event.currentTarget.innerHTML = clause + box;
-          // event.currentTarget.focus();
-          setReg('');
-        // Move the cursor to the end of the text after inserting the box
-        const range = document.createRange();
-        const selection = window.getSelection();
-        range.selectNodeContents(event.currentTarget);
-        range.collapse(false);
-        selection?.removeAllRanges();
-        selection?.addRange(range);
-        event.currentTarget.focus();
-        }
-      }
+      //   // Check if the pattern is found in the text
+      //   if (regex.test(newReg)) {
+      //     const idWithoutBrackets = newReg.slice(2, -2);
+      //     const box = ` <div class='box' contenteditable='false'>${idWithoutBrackets}</div> `;           
+      //     event.currentTarget.innerHTML = clause + box;
+      //     // event.currentTarget.focus();
+      //     setReg('');
+      //   // Move the cursor to the end of the text after inserting the box
+      //   const range = document.createRange();
+      //   const selection = window.getSelection();
+      //   range.selectNodeContents(event.currentTarget);
+      //   range.collapse(false);
+      //   selection?.removeAllRanges();
+      //   selection?.addRange(range);
+      //   event.currentTarget.focus();
+      //   }
+      // }
 
       if (event.shiftKey && event.key === 'Enter') {
         event.preventDefault();
-        addClause();
+        if (event.currentTarget.textContent !== '') {
+          addClause();    
+        }
       }
     }
   };
@@ -144,7 +149,7 @@ function AddContractPage() {
           <div className='card-header'>
             <div className='input-group'>
                <input
-                className="form-control shadow-none border-0"
+                className="form-control shadow-none border-0 rounded-0"
                 type="text"
                 id="title"
                 value={title}
@@ -167,6 +172,9 @@ function AddContractPage() {
                     handleClauseChange(clause._id?.toString() ?? '', e.currentTarget.textContent || '');
                     if (e.relatedTarget !== e.currentTarget.nextElementSibling) {
                       e.currentTarget.nextElementSibling?.classList.add('d-none');
+                    }
+                    if (e.currentTarget.textContent === '') {
+                      removeClause(clause._id?.toString() ?? '')
                     }
                   }}
                   ref={index === clauses.length - 1 ? inputRef : undefined}
@@ -201,11 +209,11 @@ function AddContractPage() {
                 {parties.map((party, index) => (
                 <div key={index} className="input-group mb-2">
                   <input
-                    className="form-control rounded-0"
-                        type="email"
-                        value={party}
-                        onChange={(e) => handlePartyChange(index, e.target.value)}
-                        placeholder="Enter party email"
+                    className="form-control shadow-none rounded-0"
+                    type="email"
+                    value={party}
+                    onChange={(e) => handlePartyChange(index, e.target.value)}
+                    placeholder="Enter party email"
                   />
                 <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => removeParty(index, party)}>X</button>
                 </div>
