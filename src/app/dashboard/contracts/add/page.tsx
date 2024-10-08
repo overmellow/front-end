@@ -18,6 +18,8 @@ function AddContractPage() {
   const router = useRouter()
   const { data: session } = useSession()
   const [contractStatus, setContractStatus] = useState<ContractStatusEnum>();
+  const [reg, setReg] = useState<string>('')
+  const [currentClauseContent, setCurrentClauseContent] = useState<string>('')
 
   const inputRef = useAutoFocus();
 
@@ -75,10 +77,44 @@ function AddContractPage() {
     ))
   }
 
-  const keyDown = (event: React.KeyboardEvent) => {
-    if (event.shiftKey && event.key === 'Enter') {
+  const keyDown = async (event: React.KeyboardEvent<HTMLDivElement | HTMLTextAreaElement>, clause: string) => {
+    
+    const regex = /\[\[.*?\]\]/;
+
+    if (event.currentTarget) {
+      const newReg = reg + event.key;
+      setReg(newReg);      
+      // console.log(event.currentTarget.textContent);
+      setCurrentClauseContent(event.currentTarget.textContent || '');
+      // console.log('Current clause content: ', currentClauseContent);
+
+      if (event.key === ' ' && reg[reg.length - 1] !== ']') 
+      {
+        setReg('');
+      } 
+      else if (event.key === 'Backspace') 
+      {
+        setReg(reg.slice(0, -1));
+      }
+      else 
+      {
+        let newReg = reg + event.key;
+        // setReg(newReg);
+
+        // Check if the pattern is found in the text
+        if (regex.test(newReg)) {
+          const idWithoutBrackets = newReg.slice(2, -2);
+          const box = ` <div class='box' contenteditable='false'>${idWithoutBrackets}</div> `;           
+          event.currentTarget.innerHTML = clause + box;
+          // event.currentTarget.focus();
+          setReg('');
+        }
+      }
+
+      if (event.shiftKey && event.key === 'Enter') {
         event.preventDefault();
         addClause();
+      }
     }
   };
 
@@ -88,7 +124,7 @@ function AddContractPage() {
       <h1 className="h2">New Contract</h1>
       <div className="btn-toolbar mb-2 mb-md-0">
         <Link href={`/dashboard/contracts`} className='me-2'>
-          <button className="btn btn-outline-dark mb-3 btn-sm">Cancel</button>
+          <button className="btn btn-light mb-3 btn-sm">Cancel</button>
         </Link>
       </div>
     </div>
@@ -99,12 +135,13 @@ function AddContractPage() {
         <div className="card">
           <div className='card-header'>
             <div className='input-group'>
-              <input
-                className="form-control no-outline title"
+               <input
+                className="form-control shadow-none border-0"
                 type="text"
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
+                placeholder='Enter contract title'
                 required
               />
             </div>
@@ -113,6 +150,7 @@ function AddContractPage() {
             {clauses.map((clause, index) => (
               <div key={clause._id as React.Key || uuidv4()} className='clause-content-wrapper mb-3'>
                 <div contentEditable={true} className='clause-content bg-light position-relative'
+                  suppressContentEditableWarning={true}
                   onFocus={(e) => e.currentTarget.nextElementSibling?.classList.remove('d-none')}
                   onBlur={(e) => {
                     handleClauseChange(clause._id?.toString() ?? '', e.currentTarget.textContent || '');
@@ -121,25 +159,30 @@ function AddContractPage() {
                     }
                   }}
                   ref={index === clauses.length - 1 ? inputRef : undefined}
-                  onKeyDown={keyDown}
+                  onKeyDown={(e) => keyDown(e, clause.content)}
                   // dangerouslySetInnerHTML={{ __html: clause.content }}
-                  >{clause.content || ''}</div>
-                  <button type="button" className="btn btn-light rounded-pill btn-sm round-button shadow-lg d-none" 
-                  onClick={() => removeClause(clause._id?.toString() ?? '')}>X</button>
+                  >
+                  {clause.content || ''}                
+                  </div>
+                  <button type="button" className="btn btn-sm shadow-lg d-none" 
+                  onClick={() => removeClause(clause._id?.toString() ?? '')}><i className="bi bi-x-circle custom-icon"></i></button>
+                  
               </div> 
               ))}
               
-              <button type="button" className="btn btn-light btn-sm" onClick={addClause}>+</button> 
+              <a href="#" style={{fontSize: '0.8rem'}} 
+                className="link-offset-2 link-underline link-underline-opacity-0 link-opacity-75 link-opacity-100-hover link-secondary" onClick={addClause}>
+                <i>+ add clause</i></a> 
           </div>
         </div>
-        <button type="submit" className='btn btn-sm btn-outline-primary mt-3'>Save New Contract</button>
+        <button type="submit" className='btn btn-sm btn-light mt-3'>Save New Contract</button>
       </div>
       <div className='col-md-3'>
         <div className='card'>
           <div className='card-body'>
             <div className='form-group'>
               <div className="input-group mb-3">
-                <span className="input-group-text" id="basic-addon1">Status</span>
+                <span className="input-group-text" id="basic-addon1">status</span>
                 <input
                   className="form-control"
                   type="text"
@@ -150,7 +193,7 @@ function AddContractPage() {
             </div>
             <div className='form-group'>
               <div className="input-group mb-3">
-                <span className="input-group-text" id="basic-addon1">Owner</span>
+                <span className="input-group-text" id="basic-addon1">owner</span>
                 <input
                   className="form-control"
                   type="text"
@@ -160,26 +203,25 @@ function AddContractPage() {
               </div>
             </div>
             <div className='card'>
-              <div className='card-header'>
-                <div className="d-flex justify-content-between align-items-center">
-                  <div>Parties</div>
-                  <button type="button" className="btn btn-outline-primary btn-sm" onClick={addParty}>+</button>
-                </div>
-              </div>
               <div className='card-body'>
+                {/* <h5 className="card-title">Parties</h5> */}
+                <h6 className="card-subtitle mb-2 text-body-secondary mb-3">parties</h6>  
                 <div className='form-group'>
                   {parties.map((party, index) => (
                   <div key={index} className="input-group mb-2">
-                  <input
-                    className="form-control"
-                        type="email"
-                        value={party}
-                        onChange={(e) => handlePartyChange(index, e.target.value)}
-                        placeholder="Enter party email"
-                  />
-                  <button type="button" className="btn btn-outline-danger" onClick={() => removeParty(index, party)}>X</button>
-                </div>
-                  ))}
+                    <input
+                      className="form-control"
+                          type="email"
+                          value={party}
+                          onChange={(e) => handlePartyChange(index, e.target.value)}
+                          placeholder="Enter party email"
+                    />
+                  <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => removeParty(index, party)}>X</button>
+                  </div>
+                  ))}                  
+                  <a href="#" style={{fontSize: '0.8rem'}} 
+                  className="link-offset-2 link-underline link-underline-opacity-0 link-opacity-75 link-opacity-100-hover link-secondary" 
+                  onClick={addParty}><i>+ add party</i></a> 
                 </div>
               </div> 
             </div>

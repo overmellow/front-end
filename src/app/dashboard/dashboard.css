@@ -124,50 +124,56 @@
     display: block !important;
   }
 
-  /* .clause-content {
-    min-height: 40px;
-    height: auto;
-  } */
-
-  .clause-content-wrapper {
+.clause-content-wrapper {
   position: relative; /* Needed for positioning the button relative to this div */
-
 }
 
 .clause-content {
-  /* min-height: 80px; */
+  min-height: 30px;
   padding: 10px;
 }
 
 .round-button {
   position: absolute;
-  top: -10px;
-  right: -10px;
-  width: 30px;
-  height: 30px;
+  /* top: 5px;
+  right: 5px; */
+  /*width: 15px;
+  height: 15px;
   /* background-color: #ff5e5e; */
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: 16px;
-  display: flex;
+  /* border-radius: 50%; */
+  /* border: 1px solid #000;
+  cursor: pointer; */
+  /* font-size: 16px; */
+  /* display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: center; */
+}
+
+.custom-icon {
+  position: absolute;
+  top: 3px;
+  right: 5px;
 }
 
 .round-button:hover {
-  background-color: #ff4b4b;
-  border: 1px solid #ff4b4b;
-  color: white;
+  /* background-color: #ff4b4b;
+  border: 1px solid #ff4b4b; */
 }
 
 .clause-content:focus {
   outline: none;
   box-shadow: 0 0 5px #cac9c9;
-  border: 2px solid #cac9c9;
+  border: 1px solid #cac9c9;
   transition: all 0.3s ease;
   min-height: 80px;
 }
 
-.title:focus {
-  outline: none;
+.box {
+  border: 1px solid #000;
+  /* padding: 5px; */
+  /* margin: 5px; */
+  width: 50px;
+  height: 20px;
+  display: inline-block;
+  background-color: skyblue;
 }

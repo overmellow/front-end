@@ -111,7 +111,7 @@ function EditContractPage() {
     <h1 className="h2">Contract Edit</h1>
     <div className="btn-toolbar mb-2 mb-md-0">
         <Link href={`/dashboard/contracts/${params.id}`} className='me-2'>
-            <button className="btn btn-outline-secondary mb-3 btn-sm">Cancel</button>
+            <button className="btn btn-light mb-3 btn-sm">Cancel</button>
           </Link>
           <Link href="#" className='me-2'>
             <button className="btn btn-outline-danger btn-sm" onClick={() => setShowDeleteModal(true)}>Delete</button>
@@ -126,7 +126,7 @@ function EditContractPage() {
           <div className='card-header'>
             <div className='input-group'>
                 <input
-                  className="form-control no-outline title"
+                  className="form-control shadow-none title border-0"
                   type="text"
                   id="title"
                   value={title}
@@ -150,14 +150,16 @@ function EditContractPage() {
                 ref={index === clauses.length - 1 ? inputRef : undefined}
                 onKeyDown={keyDown}
                 >{clause.content || ''}</div>
-                <button type="button" className="btn btn-light rounded-pill btn-sm round-button shadow-lg d-none" 
-                onClick={() => removeClause(clause._id?.toString() ?? '')}>X</button>
+                <button type="button" className="btn btn-sm shadow-lg d-none" 
+                onClick={() => removeClause(clause._id?.toString() ?? '')}><i className="bi bi-x-circle custom-icon"></i></button>
               </div>
             ))}
-                <button type="button" className="btn btn-light btn-sm" onClick={addClause}>+</button>
+                <a href="#" style={{fontSize: '0.8rem'}} 
+                className="link-offset-2 link-underline link-underline-opacity-0 link-opacity-75 link-opacity-100-hover link-secondary" onClick={addClause}>
+                <i>+ add clause</i></a> 
             </div>
           </div>
-          <button type="submit" className='btn btn-sm btn-outline-primary mt-3'>Save Edited Contract</button>
+          <button type="submit" className='btn btn-sm btn-light mt-3'>Save Edited Contract</button>
         </div>
 
     <div className='col-md-3'>
@@ -165,7 +167,7 @@ function EditContractPage() {
       <div className='card-body'>
       <div className='form-group'>
         <div className="input-group mb-3">
-          <span className="input-group-text" id="basic-addon1">Status</span>
+          <span className="input-group-text" id="basic-addon1">status</span>
           <input
             className="form-control"
             type="text"
@@ -177,9 +179,9 @@ function EditContractPage() {
 
         <div className='form-group'>
           <div className="input-group mb-3">
-            <span className="input-group-text" id="basic-addon1">Owner</span>
+            <span className="input-group-text" id="basic-addon1">owner</span>
             <input
-              className="form-control"
+              className="form-control border-0"
               type="text"
               value={owner?.email || ''}
               readOnly disabled
@@ -189,9 +191,9 @@ function EditContractPage() {
 
         <div className='form-group'>
           <div className="input-group mb-3">
-            <span className="input-group-text" id="basic-addon1">Created At</span>
+            <span className="input-group-text" id="basic-addon1">created at</span>
             <input
-              className="form-control"
+              className="form-control border-0"
               type="text"
               value={createdAt || ''}
               readOnly disabled
@@ -200,28 +202,26 @@ function EditContractPage() {
         </div>
 
         <div className='card'>
-          <div className='card-header'>
-            <div className="d-flex justify-content-between align-items-center">
-              <div>Parties</div>
-              <button type="button" className="btn btn-outline-primary btn-sm" onClick={addParty}>+</button>
-            </div>
-          </div>
           <div className='card-body'>
+          <h6 className="card-subtitle mb-2 text-body-secondary mb-3">parties</h6>  
             <div className='form-group'>
               {parties.map((party: { email: string }, index: number) => (
                 <div key={index} className="input-group mb-2">
                   <input
-                    className="form-control"
+                    className="form-control shadow-none"
                     type="text"
                     value={party.email}
                     onChange={(e) => handlePartyChange(index, e.target.value)}
                     placeholder="Enter party email"
                   />
-                  <button type="button" className="btn btn-outline-danger" onClick={() => removeParty(index)}>
+                  <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => removeParty(index)}>
                     X
                   </button>
                 </div>
               ))}
+              <a href="#" style={{fontSize: '0.8rem'}} 
+              className="link-offset-2 link-underline link-underline-opacity-0 link-opacity-75 link-opacity-100-hover link-secondary" 
+              onClick={addParty}><i>+ add party</i></a> 
             </div>
           </div>
         </div>
