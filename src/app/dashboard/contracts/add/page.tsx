@@ -8,8 +8,9 @@ import Link from 'next/link'
 import { v4 as uuidv4 } from 'uuid';
 import ContractStatusEnum from '@/app/schemas/ContractStatusEnum'
 import { IClause } from '@/app/schemas/Clause'
-import useAutoFocus from '@/app/components/useAutoFocus'
 import { createContract } from '@/app/services/contracts'
+
+import '../style.css';
 
 function AddContractPage() {
   const [title, setTitle] = useState('')
@@ -18,10 +19,14 @@ function AddContractPage() {
   const router = useRouter()
   const { data: session } = useSession()
   const [contractStatus, setContractStatus] = useState<ContractStatusEnum>();
-  const [reg, setReg] = useState<string>('')
-  const [currentClauseContent, setCurrentClauseContent] = useState<string>('')
+  const [content, setContent] = useState<{ [key: string]: string }>({});
 
-  const inputRef = useAutoFocus();
+  const handleContentChange = (key: string, value: string) => {
+    setContent(prevContent => ({
+      ...prevContent,
+      [key]: value
+    }));
+  };
 
   useEffect(() => {
     setContractStatus(ContractStatusEnum.DRAFT)
@@ -64,7 +69,6 @@ function AddContractPage() {
 
   const addClause = () => {
     setClauses([...clauses, { _id: uuidv4(), content: '' }])
-    console.log(clauses)
   }
 
   const removeClause = (_id: string) => {
@@ -77,59 +81,47 @@ function AddContractPage() {
     ))
   }
 
-  const keyDown = async (event: React.KeyboardEvent<HTMLDivElement | HTMLTextAreaElement>, clause: string) => {
-    
-    const regex = /\[\[.*?\]\]/;
+  // const addTextPlaceholder = (clause: IClause) => {
+  //   const box = ` <div class='box' contenteditable='false'>${idWithoutBrackets}</div> `;           
+  //   // event.currentTarget.innerHTML = clause + box;
+  //   setClauses(clauses.map(c => 
+  //     c._id === clause._id ? { ...clause, content: c.content + ` <div className='box'>hey</div> ` } : clause
+  //   ))
+  // }
+  
+  // const handleInput = (e: React.ChangeEvent<HTMLDivElement>) => {
+  //   const text = e.target.innerHTML;
+  //   const updatedContent = text.replace(/\[\[(\w+)\]\]/g, `<box>$1</box>`);
+  //   handleContentChange(e.target.id, updatedContent);
+  // };
 
-    if (event.currentTarget) {
-      const newReg = reg + event.key;
-      setReg(newReg);      
-      // console.log(event.currentTarget.textContent);
-      setCurrentClauseContent(event.currentTarget.textContent || '');
-      // console.log('Current clause content: ', currentClauseContent);
+  const handleTextareaInput = (e: React.ChangeEvent<HTMLTextAreaElement>, clauseId: string) => {
+    const text = e.target.value;
+    const updatedContent = text.replace(/\[\[(\w+)\]\]/g, `<box>$1</box>`);
+    handleContentChange(clauseId, updatedContent);
+  };
 
-      if (event.key === ' ' && reg[reg.length - 1] !== ']') 
-      {
-        setReg('');
-      } 
-      else if (event.key === 'Backspace') 
-      {
-        setReg(reg.slice(0, -1));
+  const renderContent = (content: string) => {
+    if (!content) return null
+    // Create a regex to find <box> elements and render them as divs
+    const parts = content.split(/(<box>.*?<\/box>)/g);
+    return parts.map((part, index) => {
+      if (part.startsWith("<box>") && part.endsWith("</box>")) {
+        const id = part.slice(5, -6); // Extract the ID
+        return (
+          <span key={index} className="box" onClick={() => console.log(id)}>
+            <div className="box-style">{id}</div>
+          </span>
+        );
       }
-      else 
-      {
-        let newReg = reg + event.key;
-        // setReg(newReg);
-
-        // Check if the pattern is found in the text
-        if (regex.test(newReg)) {
-          const idWithoutBrackets = newReg.slice(2, -2);
-          const box = ` <div class='box' contenteditable='false'>${idWithoutBrackets}</div> `;           
-          event.currentTarget.innerHTML = clause + box;
-          // event.currentTarget.focus();
-          setReg('');
-        // Move the cursor to the end of the text after inserting the box
-        const range = document.createRange();
-        const selection = window.getSelection();
-        range.selectNodeContents(event.currentTarget);
-        range.collapse(false);
-        selection?.removeAllRanges();
-        selection?.addRange(range);
-        event.currentTarget.focus();
-        }
-      }
-
-      if (event.shiftKey && event.key === 'Enter') {
-        event.preventDefault();
-        addClause();
-      }
-    }
+      return <span key={index}>{part}</span>;
+    });
   };
 
   return (
     <>
     <div className="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-      <h1 className="h2">New Contract</h1>
+      <h1 className="h3">New Contract</h1>
       <div className="btn-toolbar mb-2 mb-md-0">
         <Link href={`/dashboard/contracts`} className='me-2'>
           <button className="btn btn-light mb-3 btn-sm">Cancel</button>
@@ -155,35 +147,68 @@ function AddContractPage() {
             </div>
           </div>
           <div className="card-body">
-            <div className='form-group'>
-              {currentClauseContent}
-            </div>
             {clauses.map((clause, index) => (
-              <div key={clause._id as React.Key || uuidv4()} className='clause-content-wrapper mb-3'>
-                <div contentEditable={true} className='clause-content bg-light position-relative'
-                  suppressContentEditableWarning={true}
+              <div key={clause._id as React.Key || uuidv4()} 
+              className='clause-content-wrapper mb-3'>
+                {/* <div contentEditable={true} 
+                  id="editableContent"
+                  className='clause-content bg-light position-relative'
+                  suppressContentEditableWarning={true}                  
                   onFocus={(e) => e.currentTarget.nextElementSibling?.classList.remove('d-none')}
                   onBlur={(e) => {
-                    handleClauseChange(clause._id?.toString() ?? '', e.currentTarget.textContent || '');
-                    if (e.relatedTarget !== e.currentTarget.nextElementSibling) {
-                      e.currentTarget.nextElementSibling?.classList.add('d-none');
-                    }
-                  }}
-                  ref={index === clauses.length - 1 ? inputRef : undefined}
-                  onKeyDown={(e) => keyDown(e, clause.content)}
-                  // dangerouslySetInnerHTML={{ __html: clause.content }}
-                  >
-                  {clause.content || ''}                
-                  </div>
-                  <button type="button" className="btn btn-sm shadow-lg d-none" 
-                  onClick={() => removeClause(clause._id?.toString() ?? '')}><i className="bi bi-x-circle custom-icon"></i></button>
-                  
+                    console.log(e.currentTarget.innerHTML) */}
+                {/*  handleClauseChange(clause._id?.toString() ?? '', e.currentTarget.innerHTML || '');
+                    // handleClauseChange(clause._id?.toString() ?? '', e.currentTarget.textContent || '');
+                //     if (e.relatedTarget !== e.currentTarget.nextElementSibling) {
+                //       e.currentTarget.nextElementSibling?.classList.add('d-none');
+                //     }
+                //     if (e.currentTarget.innerHTML === '') {
+                //       removeClause(clause._id?.toString() ?? '')
+                //     }
+                //   }}
+                //   ref={index === clauses.length - 1 ? inputRef : undefined}
+                //   onInput={handleInput}
+                //   >
+                // </div> */}
+                    <textarea
+                      id="editableContent"
+                      className='clause-content bg-light position-relative'
+                      // value={textareaContent}
+                      onChange={(e) => handleTextareaInput(e, clause._id?.toString() ?? '')}
+                      onFocus={(e) => e.currentTarget.nextElementSibling?.classList.remove('d-none')}
+                      onBlur={(e) => {
+                        // handleClauseChange(clause._id?.toString() ?? '', e.currentTarget.innerHTML || '');
+                        // handleClauseChange(clause._id?.toString() ?? '', e.currentTarget.textContent || '');
+                        handleClauseChange(clause._id?.toString() ?? '', e.target.value || '');
+                        // if (e.relatedTarget !== e.currentTarget.nextElementSibling) {
+                        //   console.log('relatedTarget', e.relatedTarget)
+                        //   e.currentTarget.nextElementSibling?.classList.add('d-none');
+                        // }
+                        e.currentTarget.nextElementSibling?.classList.add('d-none');
+                        if (e.target.value === '') {
+                          removeClause(clause._id?.toString() ?? '')
+                        }
+                      }}
+                    />
+                  <button type="button" className="btn btn-sm custom-icon border-0 d-none" 
+                  onClick={() => removeClause(clause._id?.toString() ?? '')}>
+                  <i className="bi bi-x-circle"></i></button>
+
+                  {/* <button type="button" className="add-text-placeholder-link btn btn-sm opacity-50 border-0"                   
+                  onClick={() => addTextPlaceholder(clause)}>
+                  <i>+ add text placeholder</i></button>  */}
+
+                <div className="transformed-text">
+                  {renderContent(content[clause._id?.toString() ?? ''])}  
+                </div>
+
               </div> 
               ))}
               
               <a href="#" style={{fontSize: '0.8rem'}} 
                 className="link-offset-2 link-underline link-underline-opacity-0 link-opacity-75 link-opacity-100-hover link-secondary" onClick={addClause}>
-                <i>+ add clause</i></a> 
+              <i>+ add clause</i></a>
+  
           </div>
         </div>
         <button type="submit" className='btn btn-sm btn-light mt-3'>Save New Contract</button>

@@ -1,0 +1,63 @@
+#editableContent {
+    width: 100%;
+    height: 100%;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    color: transparent; 
+    caret-color: black; /* Keeps the caret visible */
+    overflow: hidden;
+    resize: none;
+    /* position: absolute; */
+    /* top: 0;
+    left: 0; */
+  }
+  
+  .transformedText {
+    position: absolute;
+    /* top: 13px;
+    left: 5px; */
+    color: black; /* Display transformed text */
+    pointer-events: none; /* Make sure the user cannot interact with this div */
+    z-index: 1000;
+  }
+
+  .transformed-text {
+    position: absolute;
+    top: 10px;
+    left: 7px;
+    color: black; /* Display transformed text */
+    /* pointer-events: none; Make sure the user cannot interact with this div */
+    z-index: 1000;
+  }
+
+  .box {
+    border: 1px solid #000;
+    padding: 0 5px;
+    margin: 0 5px;
+    width: auto;
+    height: auto;
+    display: inline-block;
+    background-color: skyblue;
+  }
+
+  .add-text-placeholder-link {
+    position: absolute;
+    bottom: 10px;
+    right: 5px;
+  }
+
+  .custom-icon {
+    position: absolute;
+    top: 3px;
+    right: 5px;
+  }
+
+  .clause-content {
+    min-height: 30px;
+    padding: 10px;
+    outline: none;
+  }
+
+  .clause-content-wrapper {
+    position: relative; /* Needed for positioning the button relative to this div */
+  }
