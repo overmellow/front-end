@@ -10,9 +10,9 @@ import { IClause } from '@/app/schemas/Clause'
 import { IParty } from '@/app/schemas/User'
 import { IUser } from '@/app/schemas/User'
 import ContractStatusEnum from '@/app/schemas/ContractStatusEnum'
-import useAutoFocus from '@/app/components/useAutoFocus'
 import { fetchContract, updateContract, deleteContract } from '@/app/services/contracts'
 import DeleteModal from '@/app/components/DeleteModal'
+import '../../style.css';
 
 function EditContractPage() {
   const [title, setTitle] = useState('')
@@ -23,8 +23,24 @@ function EditContractPage() {
   const [contractStatus, setContractStatus] = useState<ContractStatusEnum>();
   const params = useParams()
   const [showDeleteModal, setShowDeleteModal] = useState(false)
-  const inputRef = useAutoFocus();
   const [createdAt, setCreatedAt] = useState<string | null>(null)
+  const [content, setContent] = useState<{ [key: string]: string }>({});
+
+  const handleContentChange = (key: string, value: string) => {
+    setContent(prevContent => ({
+      ...prevContent,
+      [key]: value
+    }));
+  };
+
+  const addClausesContentsToState = (clauses: IClause[]) => {
+    clauses.forEach(clause => {
+      setContent(prevContent => ({
+        ...prevContent,
+        [clause._id?.toString() ?? '']: clause.content.replace(/\[\[(\w+)\]\]/g, `<box>$1</box>`)
+      }))
+    })
+  }
 
   useEffect(() => {
     async function fetchContracts() {
@@ -36,6 +52,7 @@ function EditContractPage() {
         setParties(data.parties.length > 0 ? data.parties : ['']) // Ensure there's always at least one empty string
         setClauses(data.clauses || []) // Add this line
         setCreatedAt(new Date(data.createdAt).toLocaleString())
+        addClausesContentsToState(data.clauses)
       } catch (error) {
         console.error('Error fetching contract:', error)
       }
@@ -105,6 +122,29 @@ function EditContractPage() {
     }
   };
 
+  const handleTextareaInput = (e: React.ChangeEvent<HTMLTextAreaElement>, clauseId: string) => {
+    const text = e.target.value;
+    const updatedContent = text.replace(/\[\[(\w+)\]\]/g, `<box>$1</box>`);
+    handleContentChange(clauseId, updatedContent);
+  };
+
+  const renderContent = (content: string) => {
+    if (!content) return null
+    // Create a regex to find <box> elements and render them as divs
+    const parts = content.split(/(<box>.*?<\/box>)/g);
+    return parts.map((part, index) => {
+      if (part.startsWith("<box>") && part.endsWith("</box>")) {
+        const id = part.slice(5, -6); // Extract the ID
+        return (
+          <span key={index} className="box" onClick={() => console.log(id)}>
+            <div className="box-style">{id}</div>
+          </span>
+        );
+      }
+      return <span key={index}>{part}</span>;
+    });
+  };
+
   return (
     <>
     <div className="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
@@ -113,6 +153,7 @@ function EditContractPage() {
         <Link href={`/dashboard/contracts/${params.id}`} className='me-2'>
             <button className="btn btn-light mb-3 btn-sm">Cancel</button>
           </Link>
+          <div className='vr'></div>
           <Link href="#" className='me-2'>
             <button className="btn btn-outline-danger btn-sm" onClick={() => setShowDeleteModal(true)}>Delete</button>
           </Link>
@@ -139,7 +180,7 @@ function EditContractPage() {
           <div className='card-body'>
             {clauses.map((clause: IClause, index: number) => (            
               <div key={clause._id as React.Key} className='clause-content-wrapper mb-3'>
-                <div contentEditable={true} className='clause-content bg-light position-relative'
+                {/* <div contentEditable={true} className='clause-content bg-light position-relative'
                 onFocus={(e) => e.currentTarget.nextElementSibling?.classList.remove('d-none')}
                 onBlur={(e) => {
                   handleClauseChange(clause._id?.toString() ?? '', e.currentTarget.textContent || '');
@@ -150,12 +191,33 @@ function EditContractPage() {
                     removeClause(clause._id?.toString() ?? '')
                   }
                 }}
-                // dangerouslySetInnerHTML={{ __html: clause.content }}
+                dangerouslySetInnerHTML={{ __html: clause.content }}
                 ref={index === clauses.length - 1 ? inputRef : undefined}
                 onKeyDown={keyDown}
-                >{clause.content || ''}</div>
-                <button type="button" className="btn btn-sm shadow-lg d-none" 
-                onClick={() => removeClause(clause._id?.toString() ?? '')}><i className="bi bi-x-circle custom-icon"></i></button>
+                >{clause.content || ''}</div> */}
+
+                <textarea
+                  id="editableContent"
+                  className='clause-content bg-light position-relative'
+                  // value={textareaContent}
+                  // value={clause.content}
+                  onChange={(e) => handleTextareaInput(e, clause._id?.toString() ?? '')}
+                  onFocus={(e) => e.currentTarget.nextElementSibling?.classList.remove('d-none')}
+                  onBlur={(e) => {
+                        handleClauseChange(clause._id?.toString() ?? '', e.target.value || '');
+                        e.currentTarget.nextElementSibling?.classList.add('d-none');
+                        if (e.target.value === '') {
+                          removeClause(clause._id?.toString() ?? '')
+                        }
+                      }}
+                    />
+                <button type="button" className="btn btn-sm d-none custom-icon border-0" 
+                onClick={() => removeClause(clause._id?.toString() ?? '')}>
+                <i className="bi bi-x-circle"></i></button>
+
+                <div className="transformed-text">
+                  {renderContent(content[clause._id?.toString() ?? ''])}  
+                </div>
               </div>
             ))}
                 <a href="#" style={{fontSize: '0.8rem'}} 
@@ -170,7 +232,7 @@ function EditContractPage() {
     <div className='card rounded-0'>
       <div className='card-body'>
         <div className='row mb-4'>
-          <div className="badge text-bg-secondary mb-3 rounded-0 col-md-11 mx-3">{owner?.email}</div>
+          <div className="badge text-bg-secondary mb-2 rounded-0 col-md-11 mx-3">{owner?.email}</div>
           <div className="badge text-bg-info rounded-0 col-md-4 mx-3">{contractStatus}</div>
           <div className="badge text-bg-light rounded-0 col-md-5 mx-3">{createdAt}</div>
         </div>
